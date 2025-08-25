@@ -54,6 +54,11 @@ def generate_launch_description():
         description='Specifying usb port to connected lidar'
     )
 
+     = DeclareLaunchArgument(
+        'lidar_serial_port',
+        default_value='/dev/ttyUSB0',
+        description='Specifying usb port to connected lidar')
+
     # Declare the path to files
     robot_description_xacro_file = os.path.join(
         package_dir,

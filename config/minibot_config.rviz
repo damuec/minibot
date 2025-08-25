@@ -95,9 +95,9 @@ Visualization Manager:
                   {}
                 lidar_frame:
                   {}
-              left_wheel:
+              front_wheels:
                 {}
-              right_wheel:
+              rear_wheels:
                 {}
       Update Interval: 0
       Value: true
@@ -146,7 +146,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        left_wheel:
+        front_wheels:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -156,7 +156,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        right_wheel:
+        rear_wheels:
           Alpha: 1
           Show Axes: false
           Show Trail: false

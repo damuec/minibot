@@ -78,7 +78,7 @@ def generate_launch_description():
         executable='teleop_node',
         name= 'teleop_node',
         parameters=[joy_params_file],
-        remappings=[('/cmd_vel','joy_vel')]
+        remappings=[('/cmd_vel')]
     )   
     
     # rviz2 node

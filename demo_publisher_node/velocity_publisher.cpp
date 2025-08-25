@@ -28,13 +28,13 @@ int main(int argc, char * argv[])
     std::make_shared<rclcpp::Node>("diff_drive_control_input");
 
   auto publisher = node->create_publisher<geometry_msgs::msg::TwistStamped>(
-    "/diff_drive_controller/cmd_vel", 10);
+    "/ackermann_drive_controller/cmd_vel", 10);
 
   RCLCPP_INFO(node->get_logger(), "node created");
 
   geometry_msgs::msg::TwistStamped command;
 
-  command.twist.linear.x = 0.0;
+  command.twist.linear.x = 0.2;
   command.twist.linear.y = 0.0;
   command.twist.linear.z = 0.0;
 
