@@ -1,24 +1,4 @@
-## License
-This project is licensed under MIT License. 
-For previous licensing history, see [LICENSE.previous.md](https://github.com/YJ0528/minibot/blob/main/LICENSE.previous.md)
-
-<br>
-
-<div align="center">
-	<img src="https://github.com/YJ0528/minibot/blob/main/visual_demos/robot_visual.jpg" height="350">
-	<br>
-	<h2> Differential Drive Robot using ROS 2 Jazzy Jalisco </h2>
-	<a href="https://github.com/YJ0528/minibot/blob/main/LICENSE">
-		<img src="https://img.shields.io/static/v1.svg?label=License&message=MIT&color=blue&style=flat-square" height="20">
-  	</a>
-	<a href="https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview">
-		<img src="https://img.shields.io/static/v1.svg?label=Ubuntu&message=24.04%20LTS&color=orange&style=flat-square" height="20">
-  	</a>
-	<a href="https://docs.ros.org/en/jazzy/index.html">
-	    <img src="https://img.shields.io/static/v1.svg?label=ROS%202&message=Jazzy%20Jalisco&color=0059b3&style=flat-square" height="20">
-  	</a>
-	<br><br>		
-</div>
+(Project adapting nav2 and minibot into an ackermann steering robot model. WIP)
 
 Hi everyone! Today I would like to share my project implementing a fundamental differential drive robot using <ins>**ROS2 Jazzy Jalisco**</ins> and <ins>**Raspberry Pi 5**</ins>, with features including Gazebo simulation, ros2_control, teleoperation, SLAM, and Navigation2.
 
