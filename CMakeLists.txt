@@ -17,7 +17,9 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(amen)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.

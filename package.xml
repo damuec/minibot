@@ -4,7 +4,7 @@
   <name>nav2_odin</name>
   <version>1.0.0</version>
   <description>Differerntial drive robot system using Jazzy Jalisco</description>
-  <maintainer email="tyjun0528@gmail.com">yj0528</maintainer>
+  <maintainer email="valgrind2025@gmail.com">valgrind</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
