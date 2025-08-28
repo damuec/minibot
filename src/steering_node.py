@@ -12,7 +12,7 @@ class AckermannDriver(Node):
         super().__init__('ackermann_driver') # Node name
         
         # Declare parameters for easy tuning without code changes
-        self.declare_parameter('serial_port', '/dev/ttyUSB0')
+        self.declare_parameter('serial_port', '/dev/ttyUSB1')
         self.declare_parameter('baudrate', 115200)
         self.declare_parameter('wheelbase', 0.15) # meters
         self.declare_parameter('max_steer_angle', 0.5) # radians
