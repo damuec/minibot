@@ -12,7 +12,7 @@
         <xacro:include filename = "ros2_control.xacro" />
     </xacro:if>
     <xacro:unless value="$(arg use_ros2_control)">
-        <xacro:include filename = "gz_diff_drive_control.xacro" />
+        <xacro:include filename = "gz_ackermann_drive_control.xacro" />
     </xacro:unless>
         
     <!-- Sensors -->
