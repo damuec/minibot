@@ -140,11 +140,11 @@ In addition, you need to Flash the driver code to your ESP32, see [Install and F
 
 ## Operating the Robot
 
-1.	Ensure the Raspberry Pi USB device port number matched the value declared:
+1.	Ensure the Raspberry Pi  device port number matched the value declared:
 
-	*	`/dev/ttyUSB0` for the lidar serial; located at [`./src/minibot/launch/robot.launch.py/declare_lidar_serial_port`](https://github.com/YJ0528/minibot/blob/aa18371856751b270af9280b53b87c7f5f3a6bcf/launch/robot.launch.py#L53).
-	*	`/dev/ttyUSB1` for the ESP32; located at [`./src/minibot/description/ros2_control.xacro/RobotSystem/device`](https://github.com/YJ0528/minibot/blob/aa18371856751b270af9280b53b87c7f5f3a6bcf/description/ros2_control.xacro#L11).
-	*	To check or troubleshoot the USB connection in Raspberry Pi, see [RPI5: Add USB Access for Raspberry Pi](https://github.com/YJ0528/minibot/blob/main/Tips_and_Troubleshooting.md#rpi5-add-usb-access-for-raspberry-pi).
+	*	`/dev/tty0` for the lidar serial; located at [`./src/minibot/launch/robot.launch.py/declare_lidar_serial_port`](https://github.com/YJ0528/minibot/blob/aa18371856751b270af9280b53b87c7f5f3a6bcf/launch/robot.launch.py#L53).
+	*	`/dev/tty1` for the ESP32; located at [`./src/minibot/description/ros2_control.xacro/RobotSystem/device`](https://github.com/YJ0528/minibot/blob/aa18371856751b270af9280b53b87c7f5f3a6bcf/description/ros2_control.xacro#L11).
+	*	To check or troubleshoot the  connection in Raspberry Pi, see [RPI5: Add  Access for Raspberry Pi](https://github.com/YJ0528/minibot/blob/main/Tips_and_Troubleshooting.md#rpi5-add--access-for-raspberry-pi).
 
 2.	Connects to the Raspberry Pi from your server machine using `openssh-server`. Open a terminal in the server machine, enter:
 
