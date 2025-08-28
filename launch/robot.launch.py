@@ -9,7 +9,6 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import LaunchConfiguration, Command
 
-
 # Image Transport Republishers
 def image_transport_republisher(transport, camera_topics):
     base_topic = camera_topics.split('/')[-1]
@@ -146,21 +145,33 @@ def generate_launch_description():
                     'frame_id': 'lidar_frame'
                     }.items()
     )
+    
+    nav2_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            get_package_share_directory('nav2_bringup'),
+            'launch',
+            'navigation_launch.py'
+        ]),
+        launch_arguments={
+            'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
+            'use_sim_time': use_sim_time,
+            'autostart': 'true'
+        }.items()
+    )
 
     # Create the launch description and populate
     ld = LaunchDescription()
 
-    # Add the nodes to the launch description
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
 
     ld.add_action(node_robot_state_publisher)
-    ld.add_action(steering_node)  # Add your steering node
+    ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_twist_stamper)
     for node_republisher in node_image_republishers:
         ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
+    ld.add_action(nav2_launch)  
 
-    # Generate the launch description  
     return ld

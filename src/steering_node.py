@@ -41,7 +41,7 @@ class AckermannDriver(Node):
             Twist,
             'cmd_vel', 
             self.listener_callback,
-            10)
+            5)
         self.subscription  # prevent unused variable warning
         self.get_logger().info("Ackermann driver node started and listening on cmd_vel")
 
