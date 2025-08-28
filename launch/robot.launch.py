@@ -146,11 +146,12 @@ def generate_launch_description():
                     }.items()
     )
     
+    # Nav2 bringup launch file - FIXED FORMATTING
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             get_package_share_directory('nav2_bringup'),
             'launch',
-            'bringup_launch.py'
+            'navigation_launch.py'
         ]),
         launch_arguments={
             'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
@@ -175,4 +176,3 @@ def generate_launch_description():
     ld.add_action(nav2_launch)  
 
     return ld
-#
