@@ -146,22 +146,20 @@ def generate_launch_description():
                     }.items()
     )
     
-    # Nav2 bringup launch file - FIXED PATH CONSTRUCTION
     nav2_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory('nav2_bringup'),
-                'launch',
-                'navigation_launch.py'
-         )
-     ),
-      launch_arguments={
-         'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
-            'use_sim_time': use_sim_time,
-         'autostart': 'true'
-     }.items()
-    )
-
+    PythonLaunchDescriptionSource(
+        os.path.join(
+            get_package_share_directory('nav2_bringup'),
+            'launch',
+            'navigation_launch.py'
+        )
+    ),
+    launch_arguments={
+        'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
+        'use_sim_time': use_sim_time,
+        'autostart': 'true'
+    }.items()
+)
     # Create the launch description and populate
     ld = LaunchDescription()
 
