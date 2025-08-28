@@ -150,7 +150,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([
             get_package_share_directory('nav2_bringup'),
             'launch',
-            'navigation_launch.py'
+            'bringup_launch.py'
         ]),
         launch_arguments={
             'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
