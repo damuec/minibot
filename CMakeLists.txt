@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(minibot)
+project(nav2_odin)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -48,6 +48,13 @@ install(TARGETS
 install(
   DIRECTORY config description launch worlds demo_publisher_node maps visual_demos
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Ackermann driver Python script
+install(PROGRAMS
+  src/steering_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME ackermann_driver
 )
 
 ament_package()
