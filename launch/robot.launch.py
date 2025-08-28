@@ -27,7 +27,7 @@ def image_transport_republisher(transport, camera_topics):
 
 def generate_launch_description():
 
-    package_name = 'minibot'
+    package_name = 'nav2_odin'
     package_dir = get_package_share_directory(package_name) 
 
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -94,7 +94,7 @@ def generate_launch_description():
 
     # Your Ackermann steering node
     steering_node = Node(
-        package='minibot',
+        package='nav2_odin',
         executable='ackermann_driver',
         name='ackermann_driver',
         output='screen',
