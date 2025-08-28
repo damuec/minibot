@@ -3,8 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, DeclareLaunchArgument, IncludeLaunchDescription
-from launch.event_handlers import OnProcessStart
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -12,7 +11,6 @@ from launch.substitutions import LaunchConfiguration, Command
 
 
 # Image Transport Republishers
-# terminal command example: ros2 run image_transport republish raw compressed --ros-args -r in:=/camera/image_raw -r out/compressed:=/camera/image_raw/compressed
 def image_transport_republisher(transport, camera_topics):
     base_topic = camera_topics.split('/')[-1]
     
@@ -29,23 +27,16 @@ def image_transport_republisher(transport, camera_topics):
 
 def generate_launch_description():
 
-    package_name= 'minibot'
-    package_dir= get_package_share_directory(package_name) 
+    package_name = 'minibot'
+    package_dir = get_package_share_directory(package_name) 
 
     use_sim_time = LaunchConfiguration('use_sim_time')
-    use_ros2_control = LaunchConfiguration('use_ros2_control')
     lidar_serial_port = LaunchConfiguration('lidar_serial_port')
 
-    declare_use_sim_time= DeclareLaunchArgument(
+    declare_use_sim_time = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
         description='If true, use simulated clock'
-    )
-    
-    declare_use_ros2_control = DeclareLaunchArgument(
-        'use_ros2_control',
-        default_value='true',
-        description='If true, use ros2_control'
     )
 
     declare_lidar_serial_port = DeclareLaunchArgument(
@@ -53,6 +44,7 @@ def generate_launch_description():
         default_value='/dev/ttyUSB0',
         description='Specifying usb port to connected lidar'
     )
+    
     # Declare the path to files
     robot_description_xacro_file = os.path.join(
         package_dir,
@@ -65,13 +57,6 @@ def generate_launch_description():
         'config', 
         'minibot_config.rviz'
     )
-
-    robot_controllers_file_dir = os.path.join(
-        package_dir, 
-        'config', 
-        'controller.yaml'
-    )
-
     
     twist_mux_params_file = os.path.join(
         package_dir, 
@@ -80,17 +65,16 @@ def generate_launch_description():
     )
 
     # robot_state_publisher setup    
+    # Note: We're setting use_ros2_control to false since we're not using it
     robot_description_config = Command ([
         'xacro ', 
         robot_description_xacro_file, 
-        ' use_ros2_control:=', 
-        use_ros2_control
+        ' use_ros2_control:=false'
         ])
     
     params = {
         'robot_description': ParameterValue(robot_description_config, value_type=str), 
-        'use_sim_time': use_sim_time,
-        'use_ros2_control': use_ros2_control
+        'use_sim_time': use_sim_time
     }
 
     # robot_state_publisher node
@@ -99,40 +83,32 @@ def generate_launch_description():
         executable='robot_state_publisher',
         output='screen',
         parameters=[params]
-        
     )
  
     # Image Transport Republishers Node
     camera = 'image_raw'
     depth_camera = 'depth/image_raw'
-    image_transports = ['compressed','compressedDepth', 'theora', 'zstd' ]  
+    image_transports = ['compressed','compressedDepth', 'theora', 'zstd']  
     node_image_republishers = [image_transport_republisher(transport, depth_camera) 
                           for transport in image_transports]
- 
-    # controller spawn
-    node_ros2_control = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[params, 
-                    robot_controllers_file_dir
-                    ],
+
+    # Your Ackermann steering node
+    steering_node = Node(
+        package='minibot',
+        executable='ackermann_driver',
+        name='ackermann_driver',
+        output='screen',
+        parameters=[{
+            'serial_port': '/dev/ttyUSB1',
+            'baudrate': 115200,
+            'wheelbase': 0.325,
+            'max_steer_angle': 0.4189,
+            'max_throttle': 200,
+            'max_linear_vel': 0.5,
+        }]
     )
 
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster"],
-    )
-    
-    diff_drive_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["diff_drive_controller", 
-                   "--param-file", 
-                   robot_controllers_file_dir
-        ],
-    )
-
+    # Update twist_mux to send commands directly to cmd_vel (not to diff_drive_controller)
     node_twist_mux = Node(
         package="twist_mux",
         executable="twist_mux",
@@ -143,11 +119,11 @@ def generate_launch_description():
             {'use_stamped': True},
         ],
         remappings=[
-            ('cmd_vel_out', 
-             'diff_drive_controller/cmd_vel'),
+            ('cmd_vel_out', 'cmd_vel'),  # Changed from 'diff_drive_controller/cmd_vel'
         ],
     )
 
+    # Update twist_stamper to work with your setup
     node_twist_stamper = Node(
         package="twist_stamper",
         executable="twist_stamper",
@@ -157,27 +133,6 @@ def generate_launch_description():
             ('cmd_vel_in', 'cmd_vel_smoothed'),
             ('cmd_vel_out', 'nav_vel'),
         ],
-    )
-
-    register_node_ros2_control = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action= node_robot_state_publisher,
-            on_start= [node_ros2_control],
-        )
-    )
-
-    register_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action= node_ros2_control,
-            on_start=[joint_state_broadcaster_spawner],
-        )
-    )
-
-    register_diff_drive_controller_spawner = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action= joint_state_broadcaster_spawner,
-            on_start=[diff_drive_controller_spawner],
-        )
     )
 
     node_rplidar_drive = IncludeLaunchDescription(
@@ -197,14 +152,10 @@ def generate_launch_description():
 
     # Add the nodes to the launch description
     ld.add_action(declare_use_sim_time)
-    ld.add_action(declare_use_ros2_control)
     ld.add_action(declare_lidar_serial_port)
 
-    ld.add_action(register_node_ros2_control)
-    ld.add_action(register_joint_state_broadcaster_spawner)
-    ld.add_action(register_diff_drive_controller_spawner)
-
     ld.add_action(node_robot_state_publisher)
+    ld.add_action(steering_node)  # Add your steering node
     ld.add_action(node_twist_mux)
     ld.add_action(node_twist_stamper)
     for node_republisher in node_image_republishers:
@@ -213,5 +164,3 @@ def generate_launch_description():
 
     # Generate the launch description  
     return ld
-
-    
