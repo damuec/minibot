@@ -98,7 +98,7 @@ def generate_launch_description():
         name='ackermann_driver',
         output='screen',
         parameters=[{
-            'serial_port': '/dev/esp32_controller',
+            'serial_port': '/dev/esp32',
             'baudrate': 115200,
             'wheelbase': 0.325,
             'max_steer_angle': 0.4189,
