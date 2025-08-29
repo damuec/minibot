@@ -92,6 +92,7 @@ class AckermannDriver(Node):
         # Send command to ESP32
         if self.ser is not None and self.ser.is_open:
             command = f"T{throttle} S{steering_angle}\n"
+            self.get_logger().debug(f"Sent command to ESP32: {command.strip()}")
             try:
                 self.ser.write(command.encode())
                 # Wait for acknowledgment (optional)
