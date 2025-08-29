@@ -101,89 +101,89 @@ class AckermannDriver(Node):
             except Exception as e:
                 self.get_logger().error(f"Failed to send command to ESP32: {e}")
         
-   # steering_node.py - Updated timer_callback method
-def timer_callback(self):
-    current_time = self.get_clock().now()
-    
-    # Read data from ESP32
-    if self.ser is not None and self.ser.in_waiting > 0:
-        try:
-            line = self.ser.readline().decode('utf-8').rstrip()
-            self.get_logger().info(f"Received from ESP32: {line}")  # Debug log
+    # Properly indented timer_callback method
+    def timer_callback(self):
+        current_time = self.get_clock().now()
+        
+        # Read data from ESP32
+        if self.ser is not None and self.ser.in_waiting > 0:
+            try:
+                line = self.ser.readline().decode('utf-8').rstrip()
+                self.get_logger().info(f"Received from ESP32: {line}")  # Debug log
+                
+                data = line.split(',')
+                if len(data) == 2:
+                    linear_vel = float(data[0])
+                    angular_vel = float(data[1])
+                    
+                    # Update odometry
+                    dt = (current_time - self.last_time).nanoseconds / 1e9
+                    self.last_time = current_time
+                    
+                    # Calculate position and orientation using velocity data
+                    delta_x = linear_vel * math.cos(self.th) * dt
+                    delta_y = linear_vel * math.sin(self.th) * dt
+                    delta_th = angular_vel * dt
+                    
+                    self.x += delta_x
+                    self.y += delta_y
+                    self.th += delta_th
+                    
+                    # Normalize the angle
+                    self.th = math.atan2(math.sin(self.th), math.cos(self.th))
+                    
+                    # Publish odometry message
+                    odom = Odometry()
+                    odom.header.stamp = current_time.to_msg()
+                    odom.header.frame_id = 'odom'
+                    odom.child_frame_id = 'base_link'
+                    
+                    # Set position
+                    odom.pose.pose.position.x = self.x
+                    odom.pose.pose.position.y = self.y
+                    odom.pose.pose.position.z = 0.0
+                    
+                    # Set orientation (convert yaw to quaternion)
+                    q = tf_transformations.quaternion_from_euler(0, 0, self.th)
+                    odom.pose.pose.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
+                    
+                    # Set velocity
+                    odom.twist.twist.linear.x = linear_vel
+                    odom.twist.twist.angular.z = angular_vel
+                    
+                    self.odom_pub.publish(odom)
+                    
+                    # Publish transform
+                    t = TransformStamped()
+                    t.header.stamp = current_time.to_msg()
+                    t.header.frame_id = 'odom'
+                    t.child_frame_id = 'base_link'
+                    t.transform.translation.x = self.x
+                    t.transform.translation.y = self.y
+                    t.transform.translation.z = 0.0
+                    t.transform.rotation = odom.pose.pose.orientation
+                    
+                    self.tf_broadcaster.sendTransform(t)
+                    self.get_logger().info(f"Published odometry: x={self.x}, y={self.y}, th={self.th}")
+                    
+            except (ValueError, UnicodeDecodeError) as e:
+                self.get_logger().warn(f"Received invalid data: {line}, error: {e}")
+        else:
+            t = TransformStamped()
+            t.header.stamp = current_time.to_msg()
+            t.header.frame_id = 'odom'
+            t.child_frame_id = 'base_link'
+            t.transform.translation.x = self.x
+            t.transform.translation.y = self.y
+            t.transform.translation.z = 0.0
             
-            data = line.split(',')
-            if len(data) == 2:
-                linear_vel = float(data[0])
-                angular_vel = float(data[1])
-                
-                # Update odometry
-                dt = (current_time - self.last_time).nanoseconds / 1e9
-                self.last_time = current_time
-                
-                # Calculate position and orientation using velocity data
-                delta_x = linear_vel * math.cos(self.th) * dt
-                delta_y = linear_vel * math.sin(self.th) * dt
-                delta_th = angular_vel * dt
-                
-                self.x += delta_x
-                self.y += delta_y
-                self.th += delta_th
-                
-                # Normalize the angle
-                self.th = math.atan2(math.sin(self.th), math.cos(self.th))
-                
-                # Publish odometry message
-                odom = Odometry()
-                odom.header.stamp = current_time.to_msg()
-                odom.header.frame_id = 'odom'
-                odom.child_frame_id = 'base_link'
-                
-                # Set position
-                odom.pose.pose.position.x = self.x
-                odom.pose.pose.position.y = self.y
-                odom.pose.pose.position.z = 0.0
-                
-                # Set orientation (convert yaw to quaternion)
-                q = tf_transformations.quaternion_from_euler(0, 0, self.th)
-                odom.pose.pose.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
-                
-                # Set velocity
-                odom.twist.twist.linear.x = linear_vel
-                odom.twist.twist.angular.z = angular_vel
-                
-                self.odom_pub.publish(odom)
-                
-                # Publish transform
-                t = TransformStamped()
-                t.header.stamp = current_time.to_msg()
-                t.header.frame_id = 'odom'
-                t.child_frame_id = 'base_link'
-                t.transform.translation.x = self.x
-                t.transform.translation.y = self.y
-                t.transform.translation.z = 0.0
-                t.transform.rotation = odom.pose.pose.orientation
-                
-                self.tf_broadcaster.sendTransform(t)
-                self.get_logger().info(f"Published odometry: x={self.x}, y={self.y}, th={self.th}")
-                
-        except (ValueError, UnicodeDecodeError) as e:
-            self.get_logger().warn(f"Received invalid data: {line}, error: {e}")
-    else:
-        t = TransformStamped()
-        t.header.stamp = current_time.to_msg()
-        t.header.frame_id = 'odom'
-        t.child_frame_id = 'base_link'
-        t.transform.translation.x = self.x
-        t.transform.translation.y = self.y
-        t.transform.translation.z = 0.0
-        
-        q = tf_transformations.quaternion_from_euler(0, 0, self.th)
-        t.transform.rotation.x = q[0]
-        t.transform.rotation.y = q[1]
-        t.transform.rotation.z = q[2]
-        t.transform.rotation.w = q[3]
-        
-        self.tf_broadcaster.sendTransform(t)
+            q = tf_transformations.quaternion_from_euler(0, 0, self.th)
+            t.transform.rotation.x = q[0]
+            t.transform.rotation.y = q[1]
+            t.transform.rotation.z = q[2]
+            t.transform.rotation.w = q[3]
+            
+            self.tf_broadcaster.sendTransform(t)
         
     def __del__(self):
         if self.ser is not None and self.ser.is_open:
