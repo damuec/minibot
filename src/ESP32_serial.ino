@@ -31,20 +31,22 @@ void setup() {
   Serial.println("ESP32 Ready: T<throttle> S<steering_angle>");
 }
 
+// ESP32_serial.ino - Modified loop function
 void loop() {
   // Listen for commands from Raspberry Pi
   if(Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
     command.trim();
     processCommand(command);
-
-    Serial.print("Received: ");
+    
+    // Echo the command back for verification
+    Serial.print("ECHO:");
+    Serial.println(command);
   }
   
   // Send simulated odometry data back to Raspberry Pi
   static unsigned long last_odom_time = 0;
-  if(millis() - last_odom_time > 100) { // Send every 100ms
-    // Simulate some movement data
+  if(millis() - last_odom_time > 100) { // 
     float linear_vel = 0.1;  // m/s
     float angular_vel = 0.05; // rad/s
     

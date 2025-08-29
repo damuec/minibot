@@ -40,7 +40,7 @@ def generate_launch_description():
 
     declare_lidar_serial_port = DeclareLaunchArgument(
         'lidar_serial_port',
-        default_value='/dev/ttyUSB0',
+        default_value='/dev/rplidar',
         description='Specifying usb port to connected lidar'
     )
     
