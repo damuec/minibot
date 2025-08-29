@@ -40,7 +40,7 @@ def generate_launch_description():
 
     declare_lidar_serial_port = DeclareLaunchArgument(
         'lidar_serial_port',
-        default_value='/dev/ttyUSB0',
+        default_value='/dev/rplidar',
         description='Specifying usb port to connected lidar'
     )
     
@@ -134,16 +134,17 @@ def generate_launch_description():
         ],
     )
 
+# Try different LiDAR ports if needed
     node_rplidar_drive = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('sllidar_ros2'),
-                    'launch',
-                    'sllidar_c1_launch.py'
-                )]), 
-                launch_arguments={
-                    'serial_port': '/dev/rplidar', 
-                    'frame_id': 'lidar_frame'
-                    }.items()
+       PythonLaunchDescriptionSource([os.path.join(
+         get_package_share_directory('sllidar_ros2'),
+            'launch',
+           'sllidar_c1_launch.py'
+       )]), 
+       launch_arguments={
+          'serial_port': LaunchConfiguration('lidar_serial_port'), 
+           'frame_id': 'lidar_frame'
+     }.items()  
     )
     
     nav2_launch = IncludeLaunchDescription(
