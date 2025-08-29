@@ -107,6 +107,23 @@ def generate_launch_description():
         }]
     )
 
+    # Add this to your launch description
+    static_odom_to_base_link = Node(
+      package='tf2_ros',
+      executable='static_transform_publisher',
+     arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_link'],
+       output='screen',
+     name='static_odom_publisher'
+    )
+
+        # Add this to your launch description
+    dummy_odom_publisher = Node(
+     package='nav2_common',
+     executable='dummy_odometry_publisher',
+      output='screen',
+     name='dummy_odometry_publisher'
+    )
+
     # Update twist_mux to send commands directly to cmd_vel (not to diff_drive_controller)
     node_twist_mux = Node(
         package="twist_mux",
