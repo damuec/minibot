@@ -98,7 +98,7 @@ def generate_launch_description():
         name='ackermann_driver',
         output='screen',
         parameters=[{
-            'serial_port': '/dev/ttyUSB1',
+            'serial_port': '/dev/esp32_controller',
             'baudrate': 115200,
             'wheelbase': 0.325,
             'max_steer_angle': 0.4189,
@@ -141,7 +141,7 @@ def generate_launch_description():
                     'sllidar_c1_launch.py'
                 )]), 
                 launch_arguments={
-                    'serial_port': lidar_serial_port, 
+                    'serial_port': '/dev/rplidar', 
                     'frame_id': 'lidar_frame'
                     }.items()
     )
