@@ -38,7 +38,23 @@ void loop() {
     command.trim();
     processCommand(command);
   }
+  
+  // Send simulated odometry data back to Raspberry Pi
+  static unsigned long last_odom_time = 0;
+  if(millis() - last_odom_time > 100) { // Send every 100ms
+    // Simulate some movement data (replace with real sensors if available)
+    float linear_vel = 0.1;  // m/s
+    float angular_vel = 0.05; // rad/s
+    
+    Serial.print(linear_vel);
+    Serial.print(",");
+    Serial.println(angular_vel);
+    
+    last_odom_time = millis();
+  }
 }
+  
+
 
 void processCommand(String cmd) {
   // Example command: "T150 S0.25"

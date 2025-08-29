@@ -7,6 +7,8 @@ from nav_msgs.msg import Odometry
 from tf2_ros import TransformBroadcaster
 import serial
 import math
+from geometry_msgs.msg import Quaternion
+import tf_transformations
 
 class AckermannDriver(Node):
     def __init__(self):
@@ -40,8 +42,12 @@ class AckermannDriver(Node):
         self.last_time = self.get_clock().now()
         
         # Initialize serial connection
-        self.ser = serial.Serial(self.serial_port, self.baudrate, timeout=1)
-        self.get_logger().info(f"Successfully connected to ESP32 on {self.serial_port}")
+        try:
+            self.ser = serial.Serial(self.serial_port, self.baudrate, timeout=1)
+            self.get_logger().info(f"Successfully connected to ESP32 on {self.serial_port}")
+        except Exception as e:
+            self.get_logger().error(f"Failed to connect to ESP32: {e}")
+            self.ser = None
         
         # Create Odometry publisher
         self.odom_pub = self.create_publisher(Odometry, 'odom', 10)
@@ -76,16 +82,18 @@ class AckermannDriver(Node):
         throttle = max(min(throttle, self.max_throttle), -self.max_throttle)
         
         # Send command to ESP32
-        command = f"{steering_angle},{throttle}\n"
-        self.ser.write(command.encode())
+        if self.ser is not None and self.ser.is_open:
+            command = f"T{throttle} S{steering_angle}\n"
+            try:
+                self.ser.write(command.encode())
+            except Exception as e:
+                self.get_logger().error(f"Failed to send command to ESP32: {e}")
         
     def timer_callback(self):
-        # Read data from ESP32 (assuming it sends encoder ticks or velocity data)
-        if self.ser.in_waiting > 0:
-            line = self.ser.readline().decode('utf-8').rstrip()
+        # Read data from ESP32
+        if self.ser is not None and self.ser.in_waiting > 0:
             try:
-                # Parse the data from ESP32 (adjust this based on what your ESP32 sends)
-                # Example format: "linear_velocity,angular_velocity"
+                line = self.ser.readline().decode('utf-8').rstrip()
                 data = line.split(',')
                 if len(data) == 2:
                     linear_vel = float(data[0])
@@ -105,6 +113,9 @@ class AckermannDriver(Node):
                     self.y += delta_y
                     self.th += delta_th
                     
+                    # Normalize the angle
+                    self.th = math.atan2(math.sin(self.th), math.cos(self.th))
+                    
                     # Publish odometry message
                     odom = Odometry()
                     odom.header.stamp = current_time.to_msg()
@@ -117,8 +128,6 @@ class AckermannDriver(Node):
                     odom.pose.pose.position.z = 0.0
                     
                     # Set orientation (convert yaw to quaternion)
-                    from geometry_msgs.msg import Quaternion
-                    import tf_transformations
                     q = tf_transformations.quaternion_from_euler(0, 0, self.th)
                     odom.pose.pose.orientation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
                     
@@ -140,15 +149,23 @@ class AckermannDriver(Node):
                     
                     self.tf_broadcaster.sendTransform(t)
                     
-            except ValueError:
-                self.get_logger().warn(f"Received invalid data: {line}")
+            except (ValueError, UnicodeDecodeError) as e:
+                self.get_logger().warn(f"Received invalid data: {line}, error: {e}")
+                
+    def __del__(self):
+        if self.ser is not None and self.ser.is_open:
+            self.ser.close()
                 
 def main(args=None):
     rclpy.init(args=args)
     ackermann_driver = AckermannDriver()
-    rclpy.spin(ackermann_driver)
-    ackermann_driver.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(ackermann_driver)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        ackermann_driver.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

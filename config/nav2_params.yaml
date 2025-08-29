@@ -257,10 +257,10 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 1.0  
-        inflation_radius: 0.05
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.70
       always_send_full_costmap: True
-
+     
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.
 # If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
 # file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
