@@ -37,12 +37,14 @@ void loop() {
     String command = Serial.readStringUntil('\n');
     command.trim();
     processCommand(command);
+
+    Serial.print("Received: ");
   }
   
   // Send simulated odometry data back to Raspberry Pi
   static unsigned long last_odom_time = 0;
   if(millis() - last_odom_time > 100) { // Send every 100ms
-    // Simulate some movement data (replace with real sensors if available)
+    // Simulate some movement data
     float linear_vel = 0.1;  // m/s
     float angular_vel = 0.05; // rad/s
     
