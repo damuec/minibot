@@ -147,7 +147,7 @@ def generate_launch_description():
         }.items()
     )
 
-    # Nav2 bringup launch include
+    # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -159,8 +159,37 @@ def generate_launch_description():
         launch_arguments={
             'params_file': os.path.join(package_dir, 'config', 'nav2_params.yaml'),
             'use_sim_time': use_sim_time,
-            'autostart': 'true'
+            'autostart': 'false'  # Set to false to use our own lifecycle manager
         }.items()
+    )
+
+    # Custom lifecycle manager with proper timeouts
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_navigation',
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'autostart': True,
+            'node_names': [
+                'controller_server',
+                'smoother_server', 
+                'planner_server',
+                'behavior_server',
+                'bt_navigator',
+                'waypoint_follower',
+                'velocity_smoother',
+                'collision_monitor',
+                'docking_server'
+            ],
+            'bond_timeout': 10.0,
+            'configure_timeout': 60.0,
+            'activate_timeout': 60.0,
+            'cleanup_timeout': 5.0,
+            'deactivate_timeout': 5.0,
+            'shutdown_timeout': 5.0
+        }]
     )
 
     # Create launch description and add actions
@@ -176,5 +205,6 @@ def generate_launch_description():
     ld.add_action(node_rplidar_drive)
     ld.add_action(nav2_launch)  
     ld.add_action(static_tf_node)
+    ld.add_action(lifecycle_manager)  # Add the custom lifecycle manager
 
     return ld
