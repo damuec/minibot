@@ -149,7 +149,7 @@
         <axis xyz="0 1 0"/>
     </joint>
 
-        <link name="base_dummy">
+    <link name="base_dummy">
     <inertial>
         <mass value="0.001"/>
         <origin xyz="0 0 0"/>
