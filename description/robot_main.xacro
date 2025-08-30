@@ -10,6 +10,10 @@
     <material name="black">
         <color rgba="0 0 0 1"/>
     </material>
+    
+    <material name="orange">
+        <color rgba="1 0.5 0 1"/>
+    </material>
 
     <!-- Base footprint (ground contact point) -->
     <link name="base_footprint">
@@ -37,6 +41,27 @@
     <joint name="base_footprint_to_base_link" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Chasis link -->
+    <link name="chasis">
+        <visual>
+            <geometry>
+                <box size="0.3 0.2 0.1"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <mass value="2.0"/>
+            <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+        </inertial>
+    </link>
+
+    <!-- Joint to connect base_link to chasis -->
+    <joint name="base_link_to_chasis" type="fixed">
+        <parent link="base_link"/>
+        <child link="chasis"/>
         <origin xyz="0 0 0.1" rpy="0 0 0"/>
     </joint>
 
