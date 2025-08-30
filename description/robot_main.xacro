@@ -4,6 +4,14 @@
     <xacro:property name="pi" value="3.1415926535897931" />
     <xacro:include filename="inertial_macros.xacro" />
 
+     <material name="blue">
+      <color rgba="0 0 1 1"/>
+    </material>
+
+    <material name="black">
+     <color rgba="0 0 0 1"/>
+    </material>
+
     <!-- Base footprint (ground contact point) -->
     <link name="base_footprint"/>
 

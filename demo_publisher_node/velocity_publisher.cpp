@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
     std::make_shared<rclcpp::Node>("diff_drive_control_input");
 
   auto publisher = node->create_publisher<geometry_msgs::msg::TwistStamped>(
-    "/ackermann_drive_controller/cmd_vel", 10);
+    "/cmd_vel", 10);
 
   RCLCPP_INFO(node->get_logger(), "node created");
 
