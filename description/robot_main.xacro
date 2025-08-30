@@ -1,105 +1,103 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-    <xacro:include filename = "inertial_macros.xacro" />
-
-   <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ackermann_robot">
 
-  <!-- Base footprint (ground contact point) -->
-  <link name="base_footprint"/>
+    <xacro:property name="pi" value="3.1415926535897931" />
+    <xacro:include filename="inertial_macros.xacro" />
 
-  <!-- Main robot base -->
-  <link name="base_link">
-    <visual>
-      <geometry>
-        <box size="0.4 0.3 0.2"/>
-      </geometry>
-      <material name="blue"/>
-    </visual>
-  </link>
+    <!-- Base footprint (ground contact point) -->
+    <link name="base_footprint"/>
 
-  <!-- Transform from base_footprint to base_link -->
-  <joint name="base_footprint_to_base_link" type="fixed">
-    <parent link="base_footprint"/>
-    <child link="base_link"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
-  </joint>
+    <!-- Main robot base -->
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.4 0.3 0.2"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+    </link>
 
-  <!-- Front left wheel (steered) -->
-  <link name="front_left_wheel">
-    <visual>
-      <geometry>
-        <cylinder radius="0.05" length="0.03"/>
-      </geometry>
-      <material name="black"/>
-    </visual>
-  </link>
+    <!-- Transform from base_footprint to base_link -->
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    </joint>
 
-  <joint name="front_left_steering_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="front_left_wheel"/>
-    <origin xyz="0.15 0.15 0.05" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
+    <!-- Front left wheel (steered) -->
+    <link name="front_left_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
 
-  <!-- Front right wheel (steered) -->
-  <link name="front_right_wheel">
-    <visual>
-      <geometry>
-        <cylinder radius="0.05" length="0.03"/>
-      </geometry>
-      <material name="black"/>
-    </visual>
-  </link>
+    <joint name="front_left_steering_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="front_left_wheel"/>
+        <origin xyz="0.15 0.15 0.05" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
 
-  <joint name="front_right_steering_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="front_right_wheel"/>
-    <origin xyz="0.15 -0.15 0.05" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
+    <!-- Front right wheel (steered) -->
+    <link name="front_right_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
 
-  <!-- Rear left wheel (driven) -->
-  <link name="rear_left_wheel">
-    <visual>
-      <geometry>
-        <cylinder radius="0.05" length="0.03"/>
-      </geometry>
-      <material name="black"/>
-    </visual>
-  </link>
+    <joint name="front_right_steering_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="front_right_wheel"/>
+        <origin xyz="0.15 -0.15 0.05" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
 
-  <joint name="rear_left_wheel_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="rear_left_wheel"/>
-    <origin xyz="-0.15 0.15 0.05" rpy="${pi/2} 0 0"/>
-    <axis xyz="0 1 0"/>
-  </joint>
+    <!-- Rear left wheel (driven) -->
+    <link name="rear_left_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
 
-  <!-- Rear right wheel (driven) -->
-  <link name="rear_right_wheel">
-    <visual>
-      <geometry>
-        <cylinder radius="0.05" length="0.03"/>
-      </geometry>
-      <material name="black"/>
-    </visual>
-  </link>
+    <joint name="rear_left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="rear_left_wheel"/>
+        <origin xyz="-0.15 0.15 0.05" rpy="${pi/2} 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
 
-  <joint name="rear_right_wheel_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="rear_right_wheel"/>
-    <origin xyz="-0.15 -0.15 0.05" rpy="${pi/2} 0 0"/>
-    <axis xyz="0 1 0"/>
-  </joint>
+    <!-- Rear right wheel (driven) -->
+    <link name="rear_right_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
 
-  <!-- LiDAR -->
-  <link name="lidar_frame"/>
-  <joint name="base_link_to_lidar" type="fixed">
-    <parent link="base_link"/>
-    <child link="lidar_frame"/>
-    <origin xyz="0.2 0 0.15" rpy="0 0 0"/>
-  </joint>
+    <joint name="rear_right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="rear_right_wheel"/>
+        <origin xyz="-0.15 -0.15 0.05" rpy="${pi/2} 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+
+    <!-- LiDAR -->
+    <link name="lidar_frame"/>
+    <joint name="base_link_to_lidar" type="fixed">
+        <parent link="base_link"/>
+        <child link="lidar_frame"/>
+        <origin xyz="0.2 0 0.15" rpy="0 0 0"/>
+    </joint>
 
 </robot>
