@@ -6,6 +6,7 @@ amcl:
     alpha4: 0.2
     alpha5: 0.2
     base_frame_id: "base_footprint"
+    log_level: "DEBUG"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
@@ -123,7 +124,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.2
+        min_turning_r: 0.75
       critics: [
         "ConstraintCritic", "CostCritic", "GoalCritic",
         "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
