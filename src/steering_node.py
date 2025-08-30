@@ -190,6 +190,7 @@ class AckermannDriver(Node):
         if self.ser is not None and self.ser.is_open:
             self.ser.close()
                 
+                
 def main(args=None):
     rclpy.init(args=args)
     ackermann_driver = AckermannDriver()
@@ -197,9 +198,10 @@ def main(args=None):
         rclpy.spin(ackermann_driver)
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(e)
     finally:
         ackermann_driver.destroy_node()
-        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
