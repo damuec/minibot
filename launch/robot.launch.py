@@ -151,12 +151,22 @@ def generate_launch_description():
         executable='async_slam_toolbox_node',
         name='slam_toolbox',
         output='screen',
-        parameters=[slam_params_file],
-        remappings=[
-            ('/scan', '/scan'),
-            ('/tf', 'tf'),
-            ('/tf_static', 'tf_static')
-        ]
+        parameters=[{
+            'use_sim_time': False,  # Set to false for real robot
+            'odom_frame': 'odom',
+            'map_frame': 'map', 
+            'base_frame': 'base_footprint',
+            'scan_topic': '/scan',
+            'mode': 'mapping',  # Create new map on startup
+            'resolution': 0.05,
+            'max_laser_range': 10.0,
+            'transform_timeout': 0.2,
+            'map_update_interval': 5.0,
+            'minimum_travel_distance': 0.5,
+            'minimum_travel_heading': 0.5,
+            'do_loop_closing': True,
+            'loop_search_maximum_distance': 3.0
+        }]
     )
 
     # Nav2 launch with autostart disabled
