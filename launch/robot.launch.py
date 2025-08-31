@@ -55,6 +55,11 @@ def generate_launch_description():
         'config', 
         'twist_mux.yaml'
     )
+    slam_params_file = os.path.join(
+        package_dir,
+        'config',
+        'slam_toolbox_params.yaml'
+    )
 
     # robot_state_publisher setup
     robot_description_config = Command([
@@ -125,14 +130,6 @@ def generate_launch_description():
         ],
     )
 
-    # Static transform from map to odom (required for navigation)
-    static_tf_map_odom = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_transform_publisher_map_odom',
-        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
-    )
-
     # RPLIDAR launch include
     node_rplidar_drive = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -146,6 +143,20 @@ def generate_launch_description():
             'serial_port': lidar_serial_port, 
             'frame_id': 'lidar_frame'
         }.items()
+    )
+
+    # SLAM Toolbox node (for creating map on-the-fly)
+    slam_toolbox = Node(
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox',
+        output='screen',
+        parameters=[slam_params_file],
+        remappings=[
+            ('/scan', '/scan'),
+            ('/tf', 'tf'),
+            ('/tf_static', 'tf_static')
+        ]
     )
 
     # Nav2 launch with autostart disabled
@@ -182,7 +193,8 @@ def generate_launch_description():
                 'waypoint_follower',
                 'velocity_smoother',
                 'collision_monitor',
-                'docking_server'
+                'docking_server',
+                'slam_toolbox' 
             ],
             'bond_timeout': 10.0,
             'configure_timeout': 60.0,
@@ -204,8 +216,8 @@ def generate_launch_description():
     for node_republisher in node_image_republishers:
         ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
+    ld.add_action(slam_toolbox)  # Add SLAM toolbox
     ld.add_action(nav2_launch)  
-    ld.add_action(static_tf_map_odom)  # Add static transform from map to odom
     ld.add_action(lifecycle_manager)  # Add the custom lifecycle manager
 
     return ld
