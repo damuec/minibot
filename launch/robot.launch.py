@@ -125,11 +125,12 @@ def generate_launch_description():
         ],
     )
 
-    static_tf_node = Node(
+    # Static transform from map to odom (required for navigation)
+    static_tf_map_odom = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
-        name='static_transform_publisher',
-        arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_footprint']
+        name='static_transform_publisher_map_odom',
+        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
     )
 
     # RPLIDAR launch include
@@ -204,7 +205,7 @@ def generate_launch_description():
         ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
     ld.add_action(nav2_launch)  
-    ld.add_action(static_tf_node)
+    ld.add_action(static_tf_map_odom)  # Add static transform from map to odom
     ld.add_action(lifecycle_manager)  # Add the custom lifecycle manager
 
     return ld

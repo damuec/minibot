@@ -160,7 +160,7 @@ controller_server:
       ros__parameters:
         update_frequency: 2.0
         publish_frequency: 2.0
-        global_frame: odom
+        global_frame: map
         robot_base_frame: "base_footprint"
         rolling_window: true
         width: 3

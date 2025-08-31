@@ -95,14 +95,9 @@ class AckermannDriver(Node):
             self.get_logger().debug(f"Sent command to ESP32: {command.strip()}")
             try:
                 self.ser.write(command.encode())
-                # Wait for acknowledgment (optional)
-                # response = self.ser.readline().decode('utf-8').strip()
-                # if response == "ACK":
-                #     self.get_logger().debug("ESP32 acknowledged command")
             except Exception as e:
                 self.get_logger().error(f"Failed to send command to ESP32: {e}")
         
-    # Properly indented timer_callback method
     def timer_callback(self):
         current_time = self.get_clock().now()
         
@@ -110,7 +105,7 @@ class AckermannDriver(Node):
         if self.ser is not None and self.ser.in_waiting > 0:
             try:
                 line = self.ser.readline().decode('utf-8').rstrip()
-                self.get_logger().info(f"Received from ESP32: {line}")  # Debug log
+                self.get_logger().info(f"Received from ESP32: {line}")
                 
                 data = line.split(',')
                 if len(data) == 2:
@@ -168,12 +163,13 @@ class AckermannDriver(Node):
                     self.get_logger().info(f"Published odometry: x={self.x}, y={self.y}, th={self.th}")
                     
             except (ValueError, UnicodeDecodeError) as e:
-                self.get_logger().warn(f"Received invalid data: {line}, error: {e}")
+                self.get_logger().warn(f"Received invalid data from ESP32: {e}")
         else:
+            # Publish transform even if no data is received
             t = TransformStamped()
             t.header.stamp = current_time.to_msg()
             t.header.frame_id = 'odom'
-            t.child_frame_id = 'base_link'
+            t.child_frame_id = 'base_footprint'
             t.transform.translation.x = self.x
             t.transform.translation.y = self.y
             t.transform.translation.z = 0.0
@@ -189,7 +185,6 @@ class AckermannDriver(Node):
     def __del__(self):
         if self.ser is not None and self.ser.is_open:
             self.ser.close()
-                
                 
 def main(args=None):
     rclpy.init(args=args)
