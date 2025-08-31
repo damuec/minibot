@@ -1,15 +1,21 @@
 #include <ESP32Servo.h>
 
 // --- PINS ---
-const int MOTOR_IN1 = 12;
-const int MOTOR_IN2 = 14;
-const int MOTOR_ENA = 13;
+const int MOTOR_IN1 = 16;
+const int MOTOR_IN2 = 17;
 const int SERVO_PIN = 15;
+
+// --- PWM Configuration ---
+const int MOTOR_PWM_CHANNEL_1 = 6;
+const int MOTOR_PWM_CHANNEL_2 = 5;
+const int SERVO_PWM_CHANNEL = 2;
+const int PWM_FREQUENCY = 1000;
+const int PWM_RESOLUTION = 8; // Corresponds to a value from 0 to 255
 
 // --- Configuration & Calibration ---
 const int SERVO_CENTER = 92;
-const int SERVO_LEFT_MAX = 135;   // PWM for max left turn
-const int SERVO_RIGHT_MAX = 45;   // PWM for max right turn
+const int SERVO_LEFT_MAX = 135;
+const int SERVO_RIGHT_MAX = 45;
 const float MAX_STEER_ANGLE = 0.5; // radians
 
 Servo steering_servo;
@@ -17,21 +23,23 @@ Servo steering_servo;
 void setup() {
   Serial.begin(115200);
   
-  // Motor control setup
-  pinMode(MOTOR_IN1, OUTPUT);
-  pinMode(MOTOR_IN2, OUTPUT);
-  pinMode(MOTOR_ENA, OUTPUT);
-  brake(); // Start in a safe state
-
+  // Motor control setup with LEDC
+  ledcSetup(MOTOR_PWM_CHANNEL_1, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcSetup(MOTOR_PWM_CHANNEL_2, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcAttachPin(MOTOR_IN1, MOTOR_PWM_CHANNEL_1);
+  ledcAttachPin(MOTOR_IN2, MOTOR_PWM_CHANNEL_2);
+  
   // Servo setup
   steering_servo.attach(SERVO_PIN);
-  steering_servo.write(SERVO_CENTER);
+  
+  // Start in a safe state
+  brake();
+  setSteering(0);
   
   delay(2000); // Wait for everything to initialize
   Serial.println("ESP32 Ready: T<throttle> S<steering_angle>");
 }
 
-// ESP32_serial.ino - Modified loop function
 void loop() {
   // Listen for commands from Raspberry Pi
   if(Serial.available() > 0) {
@@ -46,7 +54,7 @@ void loop() {
   
   // Send simulated odometry data back to Raspberry Pi
   static unsigned long last_odom_time = 0;
-  if(millis() - last_odom_time > 100) { // 
+  if(millis() - last_odom_time > 100) {
     float linear_vel = 0.1;  // m/s
     float angular_vel = 0.05; // rad/s
     
@@ -57,8 +65,6 @@ void loop() {
     last_odom_time = millis();
   }
 }
-  
-
 
 void processCommand(String cmd) {
   // Example command: "T150 S0.25"
@@ -81,9 +87,6 @@ void processCommand(String cmd) {
     // Execute the command
     setSteering(steering_angle);
     setThrottle(throttle);
-    
-    // Optional: echo back for confirmation
-    // Serial.println("OK");
   }
 }
 
@@ -95,15 +98,15 @@ void setSteering(float angle) {
 }
 
 void setThrottle(int throttle) {
+  throttle = constrain(throttle, -255, 255); // Limit to PWM range
+  
   if(throttle > 10) { // Forward
-    digitalWrite(MOTOR_IN1, HIGH);
-    digitalWrite(MOTOR_IN2, LOW);
-    analogWrite(MOTOR_ENA, throttle);
+    ledcWrite(MOTOR_PWM_CHANNEL_1, throttle);
+    ledcWrite(MOTOR_PWM_CHANNEL_2, 0);
   } 
   else if(throttle < -10) { // Backward
-    digitalWrite(MOTOR_IN1, LOW);
-    digitalWrite(MOTOR_IN2, HIGH);
-    analogWrite(MOTOR_ENA, -throttle);
+    ledcWrite(MOTOR_PWM_CHANNEL_1, 0);
+    ledcWrite(MOTOR_PWM_CHANNEL_2, -throttle);
   } 
   else { // Stop
     brake();
@@ -111,7 +114,6 @@ void setThrottle(int throttle) {
 }
 
 void brake() {
-  digitalWrite(MOTOR_IN1, LOW);
-  digitalWrite(MOTOR_IN2, LOW);
-  analogWrite(MOTOR_ENA, 0);
+  ledcWrite(MOTOR_PWM_CHANNEL_1, 0);
+  ledcWrite(MOTOR_PWM_CHANNEL_2, 0);
 }
