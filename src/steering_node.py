@@ -4,71 +4,163 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import serial
-import math
+import time
 
 class SteeringNode(Node):
     def __init__(self):
-        try:
-            super().__init__('steering_node')
-            
-            # Parameters
-            self.declare_parameters(
-                namespace='',
-                parameters=[
-                    ('serial_port', '/dev/esp32'),
-                    ('baudrate', 115200),
-                    ('wheelbase', 0.325),
-                    ('max_steer_angle', 0.5236),  # 30° in radians
-                    ('max_throttle', 200),
-                    ('max_linear_vel', 1.0),
-                ]
-            )
-            
-            # Retrieve parameters
-            self.serial_port = self.get_parameter('serial_port').value
-            self.baudrate = self.get_parameter('baudrate').value
-            self.wheelbase = self.get_parameter('wheelbase').value
-            self.max_steer_angle = self.get_parameter('max_steer_angle').value
-            self.max_throttle = self.get_parameter('max_throttle').value
-            self.max_linear_vel = self.get_parameter('max_linear_vel').value
-            
-            # Initialize serial connection
+        super().__init__('steering_node')
+        
+        # Declare parameters
+        self.declare_parameter('serial_port', '/dev/esp32')
+        self.declare_parameter('baud_rate', 115200)
+        self.declare_parameter('timeout', 0.1)
+        self.declare_parameter('command_timeout', 0.5)
+        
+        # Get parameters
+        serial_port = self.get_parameter('serial_port').value
+        baud_rate = self.get_parameter('baud_rate').value
+        timeout = self.get_parameter('timeout').value
+        self.command_timeout = self.get_parameter('command_timeout').value
+        
+        # Initialize serial connection
+        self.serial_conn = None
+        self.serial_port = serial_port
+        self.baud_rate = baud_rate
+        self.timeout = timeout
+        self.connect_serial()
+        
+        # Create subscription to cmd_vel
+        self.subscription = self.create_subscription(
+            Twist,
+            'cmd_vel',
+            self.cmd_vel_callback,
+            10)
+        
+        # Initialize last command time
+        self.last_command_time = self.get_clock().now().nanoseconds / 1e9
+        
+        # Create timer for safety check
+        self.timer = self.create_timer(0.1, self.safety_check)
+        
+        self.get_logger().info('Steering node initialized')
+
+    def connect_serial(self):
+        """Connect to ESP32 serial port with retry mechanism"""
+        max_retries = 10
+        retry_delay = 1  # second
+        
+        for attempt in range(max_retries):
             try:
-                self.ser = serial.Serial(self.serial_port, self.baudrate, timeout=1)
-                self.get_logger().info(f"Connected to ESP32 on {self.serial_port}")
-            except Exception as e:
-                self.get_logger().error(f"Failed to connect to ESP32: {e}")
-                self.ser = None
-            
-            # Create subscription to cmd_vel
-            self.subscription = self.create_subscription(
-                Twist,
-                'cmd_vel',
-                self.cmd_vel_callback,
-                10)
+                self.serial_conn = serial.Serial(
+                    port=self.serial_port,
+                    baudrate=self.baud_rate,
+                    timeout=self.timeout,
+                    write_timeout=self.timeout
+                )
+                self.get_logger().info(f'Connected to ESP32 on {self.serial_port}')
                 
-        except Exception as e:
-            self.get_logger().error(f"Failed to initialize node: {e}")
-            raise
+                # Wait for ESP32 to be ready
+                time.sleep(2)
+                
+                # Clear any existing data in the buffer
+                self.serial_conn.reset_input_buffer()
+                
+                # Read initial message
+                if self.serial_conn.in_waiting > 0:
+                    initial_msg = self.serial_conn.readline().decode().strip()
+                    self.get_logger().info(f'ESP32 says: {initial_msg}')
+                
+                return
+                
+            except (serial.SerialException, OSError) as e:
+                self.get_logger().warn(
+                    f'Attempt {attempt + 1}/{max_retries}: '
+                    f'Failed to connect to {self.serial_port}: {str(e)}'
+                )
+                time.sleep(retry_delay)
+        
+        self.get_logger().error(f'Could not connect to ESP32 after {max_retries} attempts')
+        self.serial_conn = None
 
     def cmd_vel_callback(self, msg):
-        # Your existing cmd_vel processing code here
-        pass
+        """Process incoming Twist messages"""
+        # Convert linear and angular velocity to throttle and steering
+        throttle = int(msg.linear.x * 255)  # Scale to -255 to 255
+        steering = float(msg.angular.z)     # Radians
+        
+        # Constrain values
+        throttle = max(-255, min(255, throttle))
+        steering = max(-0.5, min(0.5, steering))
+        
+        # Send command to ESP32
+        command = f"T{throttle},S{steering:.3f}\n"
+        
+        try:
+            if self.serial_conn and self.serial_conn.is_open:
+                self.serial_conn.write(command.encode())
+                self.last_command_time = self.get_clock().now().nanoseconds / 1e9
+                
+                # Read response (non-blocking)
+                if self.serial_conn.in_waiting > 0:
+                    response = self.serial_conn.readline().decode().strip()
+                    if response.startswith('OK:'):
+                        self.get_logger().debug(f'ESP32 response: {response}')
+                    elif response.startswith('ODOM:'):
+                        # Process odometry data if needed
+                        pass
+        except (serial.SerialException, OSError) as e:
+            self.get_logger().error(f'Serial communication error: {str(e)}')
+            self.reconnect_serial()
 
-    def __del__(self):
-        if hasattr(self, 'ser') and self.ser is not None and self.ser.is_open:
-            self.ser.close()
+    def safety_check(self):
+        """Stop the robot if no commands received recently"""
+        current_time = self.get_clock().now().nanoseconds / 1e9
+        if current_time - self.last_command_time > self.command_timeout:
+            try:
+                if self.serial_conn and self.serial_conn.is_open:
+                    self.serial_conn.write("T0,S0\n".encode())
+                    # Only log warning once to avoid spamming
+                    if current_time - self.last_command_time < self.command_timeout + 1.0:
+                        self.get_logger().warn('No commands received - stopping robot')
+            except (serial.SerialException, OSError) as e:
+                self.get_logger().error(f'Safety check error: {str(e)}')
+                self.reconnect_serial()
+
+    def reconnect_serial(self):
+        """Reconnect to serial port"""
+        self.get_logger().warn('Attempting to reconnect to ESP32...')
+        try:
+            if self.serial_conn:
+                self.serial_conn.close()
+        except:
+            pass
+        
+        time.sleep(1)
+        self.connect_serial()
+
+    def destroy_node(self):
+        """Cleanup before shutdown"""
+        try:
+            if self.serial_conn and self.serial_conn.is_open:
+                self.serial_conn.write("T0,S0\n".encode())  # Stop robot
+                time.sleep(0.1)
+                self.serial_conn.close()
+        except:
+            pass
+        super().destroy_node()
 
 def main(args=None):
     rclpy.init(args=args)
+    steering_node = SteeringNode()
+    
     try:
-        steering_node = SteeringNode()
         rclpy.spin(steering_node)
+    except KeyboardInterrupt:
+        steering_node.get_logger().info('Keyboard interrupt, shutting down.')
     except Exception as e:
-        print(f"Error: {e}")
+        steering_node.get_logger().error(f'Unexpected error: {str(e)}')
     finally:
-        if 'steering_node' in locals():
-            steering_node.destroy_node()
+        steering_node.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

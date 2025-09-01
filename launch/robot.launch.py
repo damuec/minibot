@@ -191,7 +191,7 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
-            'autostart': False,
+            'autostart': True,
             'node_names': [
                 'controller_server',
                 'smoother_server', 
