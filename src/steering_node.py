@@ -20,7 +20,7 @@ class SteeringNode(Node):
         serial_port = self.get_parameter('serial_port').value
         baud_rate = self.get_parameter('baud_rate').value
         timeout = self.get_parameter('timeout').value
-        self.command_timeout = self.get_parameter('command_timeout').value  # Fixed typo: get_ameter -> get_parameter
+        self.command_timeout = self.get_parameter('command_timeout').value
         
         # Initialize serial connection
         self.serial_conn = None
@@ -37,7 +37,7 @@ class SteeringNode(Node):
             10)
         
         # Initialize last command time
-        self.last_command_time = self.get_clock().now().nanoseconds / 1e9  # Use ROS time
+        self.last_command_time = self.get_clock().now().nanoseconds / 1e9
         
         # Create timer for safety check
         self.timer = self.create_timer(0.1, self.safety_check)
@@ -80,7 +80,6 @@ class SteeringNode(Node):
                 time.sleep(retry_delay)
         
         self.get_logger().error(f'Could not connect to ESP32 after {max_retries} attempts')
-        # Don't raise an exception, just set serial_conn to None
         self.serial_conn = None
 
     def cmd_vel_callback(self, msg):
@@ -94,12 +93,12 @@ class SteeringNode(Node):
         steering = max(-0.5, min(0.5, steering))
         
         # Send command to ESP32
-        command = f"T{throttle},S{steering:.3f}\n"  # Format steering to 3 decimal places
+        command = f"T{throttle},S{steering:.3f}\n"
         
         try:
             if self.serial_conn and self.serial_conn.is_open:
                 self.serial_conn.write(command.encode())
-                self.last_command_time = self.get_clock().now().nanoseconds / 1e9  # Use ROS time
+                self.last_command_time = self.get_clock().now().nanoseconds / 1e9
                 
                 # Read response (non-blocking)
                 if self.serial_conn.in_waiting > 0:

@@ -14,8 +14,8 @@ const int PWM_FREQUENCY = 1000;
 const int PWM_RESOLUTION = 8;
 
 // --- Robot Physical Parameters (UPDATE THESE VALUES) ---
-const float WHEEL_RADIUS = 0.02;        // Wheel radius in meters (5cm)
-const float WHEEL_BASE = 0.13;          // Distance between wheels in meters (30cm)
+const float WHEEL_RADIUS = 0.05;        // Wheel radius in meters (5cm)
+const float WHEEL_BASE = 0.13;           // Distance between wheels in meters (30cm)
 const float GEAR_RATIO = 20.0;          // Motor gear ratio
 const float MAX_MOTOR_RPM = 550.0;      // Maximum RPM of your motor
 const float BATTERY_VOLTAGE = 12.0;     // Operating voltage
@@ -42,13 +42,6 @@ const float PWM_TO_VELOCITY = MAX_LINEAR_VELOCITY / 255.0;
 Servo steering_servo;
 unsigned long last_command_time = 0;
 unsigned long last_odometry_time = 0;
-
-// Odometry state variables
-float x = 0.0;          // Position x (meters)
-float y = 0.0;          // Position y (meters)
-float theta = 0.0;      // Orientation (radians)
-float linear_vel = 0.0; // Linear velocity (m/s)
-float angular_vel = 0.0;// Angular velocity (rad/s)
 
 // Current command values
 int current_throttle = 0;
@@ -105,7 +98,6 @@ void loop() {
   
   // Update odometry and send data
   if (millis() - last_odometry_time > ODOMETRY_UPDATE_MS) {
-    updateOdometry();
     sendOdometry();
     last_odometry_time = millis();
   }
@@ -166,38 +158,23 @@ void brake() {
   ledcWrite(MOTOR_PWM_CHANNEL_2, 0);
 }
 
-void updateOdometry() {
-  // Calculate velocities based on current commands
-  linear_vel = current_throttle * PWM_TO_VELOCITY;
+void sendOdometry() {
+  // Since we don't have encoders, we'll estimate based on commands
+  float linear_vel = current_throttle * PWM_TO_VELOCITY;
+  float angular_vel = 0.0;
   
-  // For a differential drive robot, angular velocity depends on wheel speeds
   // For a car-like steering, angular velocity = linear_vel * tan(steering_angle) / wheel_base
   if (abs(current_steering) > 0.01 && abs(linear_vel) > 0.01) {
     angular_vel = linear_vel * tan(current_steering) / WHEEL_BASE;
-  } else {
-    angular_vel = 0.0;
   }
   
-  // Update position (simple Euler integration)
-  float dt = ODOMETRY_UPDATE_MS / 1000.0;
-  theta += angular_vel * dt;
-  
-  // Normalize theta to [-π, π]
-  while (theta > M_PI) theta -= 2 * M_PI;
-  while (theta < -M_PI) theta += 2 * M_PI;
-  
-  x += linear_vel * cos(theta) * dt;
-  y += linear_vel * sin(theta) * dt;
-}
-
-void sendOdometry() {
   // Send odometry data
   Serial.print("ODOM:");
-  Serial.print(x);
+  Serial.print(0.0);  // x position (not available without encoders)
   Serial.print(",");
-  Serial.print(y);
+  Serial.print(0.0);  // y position (not available without encoders)
   Serial.print(",");
-  Serial.print(theta);
+  Serial.print(0.0);  // theta orientation (not available without encoders)
   Serial.print(",");
   Serial.print(linear_vel);
   Serial.print(",");

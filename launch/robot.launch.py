@@ -90,16 +90,14 @@ def generate_launch_description():
     # Ackermann steering node
     steering_node = Node(
         package='nav2_odin',
-        executable='ackermann_driver',
-        name='ackermann_driver',
+        executable='steering_node',
+        name='steering_node',
         output='screen',
         parameters=[{
             'serial_port': '/dev/esp32',
-            'baudrate': 115200,
-            'wheelbase': 0.325,
-            'max_steer_angle': 0.4189,
-            'max_throttle': 200,
-            'max_linear_vel': 0.5,
+            'baud_rate': 115200,
+            'timeout': 0.1,
+            'command_timeout': 0.5,
         }]
     )
 
@@ -203,8 +201,7 @@ def generate_launch_description():
                 'waypoint_follower',
                 'velocity_smoother',
                 'collision_monitor',
-                'docking_server',
-                'slam_toolbox' 
+                'docking_server'
             ],
             'bond_timeout': 10.0,
             'configure_timeout': 60.0,
