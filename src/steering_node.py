@@ -9,7 +9,7 @@ import math
 class AckermannDriver(Node):
     def __init__(self):
         try:
-            super().__init__('ackermann_driver')
+            super().__init__('steering_node')
             
             # Parameters
             self.declare_parameters(
