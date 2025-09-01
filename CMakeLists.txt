@@ -56,7 +56,6 @@ install(
 install(PROGRAMS
   src/steering_node.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME ackermann_driver
 )
 
 ament_package()

@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 import serial
 import math
 
-class AckermannDriver(Node):
+class SteeringNode(Node):
     def __init__(self):
         try:
             super().__init__('steering_node')
@@ -62,13 +62,13 @@ class AckermannDriver(Node):
 def main(args=None):
     rclpy.init(args=args)
     try:
-        ackermann_driver = AckermannDriver()
-        rclpy.spin(ackermann_driver)
+        steering_node = SteeringNode()
+        rclpy.spin(steering_node)
     except Exception as e:
         print(f"Error: {e}")
     finally:
-        if 'ackermann_driver' in locals():
-            ackermann_driver.destroy_node()
+        if 'steering_node' in locals():
+            steering_node.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':
