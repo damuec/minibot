@@ -3,13 +3,34 @@
 <package format="3">
   <name>nav2_odin</name>
   <version>1.0.0</version>
-  <description>Differerntial drive robot system using Jazzy Jalisco</description>
+  <description>Differential drive robot system using Jazzy Jalisco</description>
   <maintainer email="valgrind2025@gmail.com">valgrind</maintainer>
   <license>Apache-2.0</license>
 
+  <!-- Build tool dependencies -->
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <!-- Build dependencies -->
   <depend>rclcpp</depend>
+  <depend>rclpy</depend>
   <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  
+  <!-- Python-specific dependencies -->
+  <exec_depend>python3-pyserial</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  
+  <!-- Navigation dependencies -->
+  <depend>nav2_bringup</depend>
+  <depend>nav2_common</depend>
+  <depend>slam_toolbox</depend>
+  <depend>twist_mux</depend>
+  
+  <!-- Test dependencies -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

@@ -218,7 +218,7 @@ def generate_launch_description():
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
     ld.add_action(node_robot_state_publisher)
-    ld.add_action(steering_node)  
+    ld.add_action(ackermann_driver)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_twist_stamper)
     ld.add_action(node_rplidar_drive)
