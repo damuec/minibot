@@ -1,96 +1,147 @@
 #include <ESP32Servo.h>
+#include <math.h>
 
-// --- PINS ---
+// --- Hardware Configuration ---
 const int MOTOR_IN1 = 12;
 const int MOTOR_IN2 = 14;
 const int SERVO_PIN = 15;
 
 // --- PWM Configuration ---
-const int MOTOR_PWM_CHANNEL = 0;
+const int MOTOR_PWM_CHANNEL_1 = 0;
+const int MOTOR_PWM_CHANNEL_2 = 1;
+const int SERVO_PWM_CHANNEL = 2;
 const int PWM_FREQUENCY = 1000;
 const int PWM_RESOLUTION = 8;
 
-// --- Configuration & Calibration ---
-const int SERVO_CENTER = 92;
-const int SERVO_LEFT_MAX = 135;
-const int SERVO_RIGHT_MAX = 45;
-const float MAX_STEER_ANGLE = 0.5;
+// --- Robot Physical Parameters (UPDATE THESE VALUES) ---
+const float WHEEL_RADIUS = 0.02;        // Wheel radius in meters (5cm)
+const float WHEEL_BASE = 0.13;          // Distance between wheels in meters (30cm)
+const float GEAR_RATIO = 20.0;          // Motor gear ratio
+const float MAX_MOTOR_RPM = 550.0;      // Maximum RPM of your motor
+const float BATTERY_VOLTAGE = 12.0;     // Operating voltage
+
+// --- Servo Calibration ---
+const int SERVO_CENTER = 90;
+const int SERVO_LEFT_MAX = 120;
+const int SERVO_RIGHT_MAX = 60;
+const float MAX_STEER_ANGLE = 0.5;   
+
+// --- Serial Configuration ---
+const int SERIAL_BAUD_RATE = 115200;
+const int SERIAL_TIMEOUT = 10;          // ms
+const int BUFFER_SIZE = 32;
+
+// --- Performance Optimization ---
+const int ODOMETRY_UPDATE_MS = 100;     // Odometry update interval
+const int COMMAND_TIMEOUT_MS = 500;     // Safety timeout
+
+// --- Calculated Constants ---
+const float MAX_LINEAR_VELOCITY = (MAX_MOTOR_RPM * 2 * M_PI * WHEEL_RADIUS) / (60 * GEAR_RATIO);
+const float PWM_TO_VELOCITY = MAX_LINEAR_VELOCITY / 255.0;
 
 Servo steering_servo;
+unsigned long last_command_time = 0;
+unsigned long last_odometry_time = 0;
+
+// Odometry state variables
+float x = 0.0;          // Position x (meters)
+float y = 0.0;          // Position y (meters)
+float theta = 0.0;      // Orientation (radians)
+float linear_vel = 0.0; // Linear velocity (m/s)
+float angular_vel = 0.0;// Angular velocity (rad/s)
+
+// Current command values
+int current_throttle = 0;
+float current_steering = 0.0;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(SERIAL_BAUD_RATE);
+  Serial.setTimeout(SERIAL_TIMEOUT);
   
-  // Motor control setup with LEDC
+  // Configure motor control with LEDC
   pinMode(MOTOR_IN1, OUTPUT);
   pinMode(MOTOR_IN2, OUTPUT);
   
-  // Configure LEDC for motor control
-  ledcSetup(MOTOR_PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-  ledcAttachPin(MOTOR_IN1, MOTOR_PWM_CHANNEL);
+  ledcSetup(MOTOR_PWM_CHANNEL_1, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcSetup(MOTOR_PWM_CHANNEL_2, PWM_FREQUENCY, PWM_RESOLUTION);
+  ledcAttachPin(MOTOR_IN1, MOTOR_PWM_CHANNEL_1);
+  ledcAttachPin(MOTOR_IN2, MOTOR_PWM_CHANNEL_2);
   
-  brake(); // Start in a safe state
-
-  // Servo setup
+  // Initialize in safe state
+  brake();
+  
+  // Configure servo
   steering_servo.attach(SERVO_PIN);
   steering_servo.write(SERVO_CENTER);
   
+  // Wait for stabilization
   delay(2000);
-  Serial.println("ESP32 Ready: T<throttle> S<steering_angle>");
+  Serial.println("ESP32_READY");
+  
+  // Print robot configuration
+  Serial.print("MAX_LINEAR_VELOCITY:");
+  Serial.println(MAX_LINEAR_VELOCITY);
 }
 
 void loop() {
-  // Listen for commands from Raspberry Pi
-  if(Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    processCommand(command);
+  // Process incoming commands
+  if (Serial.available() > 0) {
+    char buffer[BUFFER_SIZE];
+    int bytes_read = Serial.readBytesUntil('\n', buffer, BUFFER_SIZE - 1);
+    buffer[bytes_read] = '\0'; // Null-terminate
     
-    // Echo the command back for verification
-    Serial.print("ECHO:");
-    Serial.println(command);
+    if (bytes_read > 0) {
+      processCommand(buffer);
+      last_command_time = millis();
+    }
   }
   
-  // Send simulated odometry data back to Raspberry Pi
-  static unsigned long last_odom_time = 0;
-  if(millis() - last_odom_time > 100) {
-    float linear_vel = 0.1;  // m/s
-    float angular_vel = 0.05; // rad/s
-    
-    Serial.print(linear_vel);
-    Serial.print(",");
-    Serial.println(angular_vel);
-    
-    last_odom_time = millis();
+  // Safety timeout - stop if no commands received
+  if (millis() - last_command_time > COMMAND_TIMEOUT_MS) {
+    brake();
+    current_throttle = 0;
+    current_steering = 0.0;
+  }
+  
+  // Update odometry and send data
+  if (millis() - last_odometry_time > ODOMETRY_UPDATE_MS) {
+    updateOdometry();
+    sendOdometry();
+    last_odometry_time = millis();
   }
 }
 
-void processCommand(String cmd) {
-  // Example command: "T150 S0.25"
+void processCommand(const char* command) {
+  // Expected format: "T<throttle>,S<steering>"
   int throttle = 0;
-  float steering_angle = 0.0;
+  float steering = 0.0;
   
-  // Find positions of T and S in the command string
-  int t_index = cmd.indexOf('T');
-  int s_index = cmd.indexOf('S');
+  // Parse command efficiently
+  const char* throttle_ptr = strchr(command, 'T');
+  const char* steering_ptr = strchr(command, 'S');
   
-  if(t_index != -1 && s_index != -1 && s_index > t_index) {
-    // Extract throttle value (between T and S)
-    String throttle_str = cmd.substring(t_index+1, s_index);
-    throttle = throttle_str.toInt();
+  if (throttle_ptr && steering_ptr && steering_ptr > throttle_ptr) {
+    throttle = atoi(throttle_ptr + 1);
+    steering = atof(steering_ptr + 1);
     
-    // Extract steering angle (after S)
-    String angle_str = cmd.substring(s_index+1);
-    steering_angle = angle_str.toFloat();
-    
-    // Execute the command
-    setSteering(steering_angle);
     setThrottle(throttle);
+    setSteering(steering);
+    
+    // Store current values for odometry calculation
+    current_throttle = throttle;
+    current_steering = steering;
+    
+    // Echo for verification
+    Serial.print("OK:T");
+    Serial.print(throttle);
+    Serial.print(",S");
+    Serial.println(steering);
   }
 }
 
 void setSteering(float angle) {
-  // Convert radians to PWM value
+  // Constrain and convert angle to PWM
+  angle = constrain(angle, -MAX_STEER_ANGLE, MAX_STEER_ANGLE);
   int pwm_value = SERVO_CENTER + (int)(angle * (SERVO_RIGHT_MAX - SERVO_CENTER) / MAX_STEER_ANGLE);
   pwm_value = constrain(pwm_value, SERVO_RIGHT_MAX, SERVO_LEFT_MAX);
   steering_servo.write(pwm_value);
@@ -99,21 +150,56 @@ void setSteering(float angle) {
 void setThrottle(int throttle) {
   throttle = constrain(throttle, -255, 255);
   
-  if(throttle > 10) { // Forward
-    ledcWrite(MOTOR_PWM_CHANNEL, throttle);
-    digitalWrite(MOTOR_IN2, LOW);
-  } 
-  else if(throttle < -10) { // Backward
-    ledcWrite(MOTOR_PWM_CHANNEL, -throttle);
-    digitalWrite(MOTOR_IN1, LOW);
-  } 
-  else { // Stop
+  if (throttle > 10) { // Forward
+    ledcWrite(MOTOR_PWM_CHANNEL_1, throttle);
+    ledcWrite(MOTOR_PWM_CHANNEL_2, 0);
+  } else if (throttle < -10) { // Backward
+    ledcWrite(MOTOR_PWM_CHANNEL_1, 0);
+    ledcWrite(MOTOR_PWM_CHANNEL_2, -throttle);
+  } else { // Stop
     brake();
   }
 }
 
 void brake() {
-  ledcWrite(MOTOR_PWM_CHANNEL, 0);
-  digitalWrite(MOTOR_IN1, LOW);
-  digitalWrite(MOTOR_IN2, LOW);
+  ledcWrite(MOTOR_PWM_CHANNEL_1, 0);
+  ledcWrite(MOTOR_PWM_CHANNEL_2, 0);
+}
+
+void updateOdometry() {
+  // Calculate velocities based on current commands
+  linear_vel = current_throttle * PWM_TO_VELOCITY;
+  
+  // For a differential drive robot, angular velocity depends on wheel speeds
+  // For a car-like steering, angular velocity = linear_vel * tan(steering_angle) / wheel_base
+  if (abs(current_steering) > 0.01 && abs(linear_vel) > 0.01) {
+    angular_vel = linear_vel * tan(current_steering) / WHEEL_BASE;
+  } else {
+    angular_vel = 0.0;
+  }
+  
+  // Update position (simple Euler integration)
+  float dt = ODOMETRY_UPDATE_MS / 1000.0;
+  theta += angular_vel * dt;
+  
+  // Normalize theta to [-π, π]
+  while (theta > M_PI) theta -= 2 * M_PI;
+  while (theta < -M_PI) theta += 2 * M_PI;
+  
+  x += linear_vel * cos(theta) * dt;
+  y += linear_vel * sin(theta) * dt;
+}
+
+void sendOdometry() {
+  // Send odometry data
+  Serial.print("ODOM:");
+  Serial.print(x);
+  Serial.print(",");
+  Serial.print(y);
+  Serial.print(",");
+  Serial.print(theta);
+  Serial.print(",");
+  Serial.print(linear_vel);
+  Serial.print(",");
+  Serial.println(angular_vel);
 }
