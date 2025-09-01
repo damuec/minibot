@@ -226,4 +226,4 @@ def generate_launch_description():
     ld.add_action(nav2_launch)  
     ld.add_action(lifecycle_manager)  # Add the custom lifecycle manager
 
-    return ld
+    return ld #
