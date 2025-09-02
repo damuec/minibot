@@ -221,6 +221,8 @@ def generate_launch_description():
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_twist_stamper)
+    for node_republisher in node_image_republishers:
+        ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)  # Add SLAM toolbox
     ld.add_action(nav2_launch)  

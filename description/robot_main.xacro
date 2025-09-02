@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="nav2_odin">
 
+    <xacro:include filename="inertial_macros.xacro" />
 
     <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -146,20 +147,9 @@
         <child link="rear_right_wheel"/>
         <origin xyz="-0.15 -0.15 0.05" rpy="${pi/2} 0 0"/>
         <axis xyz="0 1 0"/>
-        </joint>
-
-    <link name="base_dummy_inertialless">
-        <visual>
-            <geometry>
-                <box size="0.01 0.01 0.01"/>
-            </geometry>
-        </visual>
-    </link>
-
-    <joint name="base_dummy_joint" type="fixed">
-        <parent link="base_dummy_inertialless"/>
-        <child link="base_dummy"/>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
+
+    <!-- Remove base_dummy completely as it's not needed -->
+    <!-- The root should be base_footprint -->
 
 </robot>

@@ -15,7 +15,7 @@ const int PWM_RESOLUTION = 8;
 
 // --- Robot Physical Parameters (UPDATE THESE VALUES) ---
 const float WHEEL_RADIUS = 0.05;        // Wheel radius in meters (5cm)
-const float WHEEL_BASE = 0.13;           // Distance between wheels in meters (30cm)
+const float WHEEL_BASE = 0.3;           // Distance between wheels in meters (30cm)
 const float GEAR_RATIO = 20.0;          // Motor gear ratio
 const float MAX_MOTOR_RPM = 550.0;      // Maximum RPM of your motor
 const float BATTERY_VOLTAGE = 12.0;     // Operating voltage
