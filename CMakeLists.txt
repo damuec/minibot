@@ -41,21 +41,25 @@ ament_target_dependencies(velocity_publisher
   rclcpp
   geometry_msgs
 )
-
+# Install C++ executables to libexec directory
 install(TARGETS
   velocity_publisher
-  DESTINATION lib/${PROJECT_NAME}
+  DESTINATION libexec/${PROJECT_NAME}
 )
 
+# Install Python nodes to lib directory (without .py extension)
+install(PROGRAMS
+  src/steering_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME steering_node
+)
+
+# Install other directories
 install(
   DIRECTORY config description launch worlds demo_publisher_node maps visual_demos
   DESTINATION share/${PROJECT_NAME}
 )
 
-# Ackermann driver Python script
-install(PROGRAMS
-  src/steering_node.py
-  DESTINATION lib/${PROJECT_NAME}
-)
+ament_package()
 
 ament_package()
