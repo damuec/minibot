@@ -1,3 +1,4 @@
+---
 amcl:
   ros__parameters:
     alpha1: 0.2
@@ -79,7 +80,7 @@ controller_server:
 
     # Goal checker
     general_goal_checker:
-      stateful: True
+      stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.25
       yaw_goal_tolerance: 0.25
@@ -87,7 +88,7 @@ controller_server:
     # DWB Controller
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
-      debug_trajectory_details: True
+      debug_trajectory_details: true
       min_vel_x: -0.5
       max_vel_x: 0.5
       min_vel_y: 0.0
@@ -107,22 +108,23 @@ controller_server:
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.1
-      use_rotate_to_heading: True
+      use_rotate_to_heading: true
       rotate_to_heading_min_angle: 0.785
       goal_dist_tol: 0.25
       path_distance_bias: 32.0
       goal_distance_bias: 24.0
       occdist_scale: 0.01
       forward_point_distance: 0.325
-      stop_on_rotation: True
-      critics: ["RotateToGoal", "Oscillation", "GoalAlign", "PathAlign", "PathDist", "GoalDist", "ObstacleFootprint"]
+      stop_on_rotation: true
+      critics: ["RotateToGoal", "Oscillation", "GoalAlign", "PathAlign", 
+                "PathDist", "GoalDist", "ObstacleFootprint"]
       ObstacleFootprint:
         plugin: "dwb_critics::ObstacleFootprintCritic"
         costmap_layer: "voxel_layer"
         inflation_layer: "inflation_layer"
         max_vel_x: 0.5
         max_vel_theta: 1.0
-        sum_scores: True
+        sum_scores: true
       RotateToGoal:
         plugin: "dwb_critics::RotateToGoalCritic"
         slop: 0.785
@@ -174,8 +176,8 @@ controller_server:
           inflation_radius: 0.70
         voxel_layer:
           plugin: "nav2_costmap_2d::VoxelLayer"
-          enabled: True
-          publish_voxel_map: True
+          enabled: true
+          publish_voxel_map: true
           origin_z: 0.0
           z_resolution: 0.05
           z_voxels: 16
@@ -185,8 +187,8 @@ controller_server:
           scan:
             topic: /scan
             max_obstacle_height: 2.0
-            clearing: True
-            marking: True
+            clearing: true
+            marking: true
             data_type: "LaserScan"
             raytrace_max_range: 3.0
             raytrace_min_range: 0.0
@@ -194,8 +196,8 @@ controller_server:
             obstacle_min_range: 0.0
         static_layer:
           plugin: "nav2_costmap_2d::StaticLayer"
-          map_subscribe_transient_local: True
-        always_send_full_costmap: True
+          map_subscribe_transient_local: true
+        always_send_full_costmap: true
 
 global_costmap:
   ros__parameters:
@@ -209,13 +211,13 @@ global_costmap:
     plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
     obstacle_layer:
       plugin: "nav2_costmap_2d::ObstacleLayer"
-      enabled: True
+      enabled: true
       observation_sources: scan
       scan:
         topic: /scan
         max_obstacle_height: 2.0
-        clearing: True
-        marking: True
+        clearing: true
+        marking: true
         data_type: "LaserScan"
         raytrace_max_range: 3.0
         raytrace_min_range: 0.0
@@ -223,12 +225,12 @@ global_costmap:
         obstacle_min_range: 0.0
     static_layer:
       plugin: "nav2_costmap_2d::StaticLayer"
-      map_subscribe_transient_local: True
+      map_subscribe_transient_local: true
     inflation_layer:
       plugin: "nav2_costmap_2d::InflationLayer"
       cost_scaling_factor: 3.0
       inflation_radius: 0.70
-    always_send_full_costmap: True
+    always_send_full_costmap: true
 
 planner_server:
   ros__parameters:
@@ -247,7 +249,7 @@ smoother_server:
       plugin: "nav2_smoother::SimpleSmoother"
       tolerance: 1.0e-10
       max_its: 1000
-      do_refinement: True
+      do_refinement: true
 
 behavior_server:
   ros__parameters:
@@ -256,7 +258,8 @@ behavior_server:
     local_footprint_topic: local_costmap/published_footprint
     global_footprint_topic: global_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    behavior_plugins: ["spin", "backup", "drive_on_heading", 
+                       "assisted_teleop", "wait"]
     spin:
       plugin: "nav2_behaviors::Spin"
     backup:
@@ -284,13 +287,13 @@ waypoint_follower:
     waypoint_task_executor_plugin: "wait_at_waypoint"
     wait_at_waypoint:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
-      enabled: True
+      enabled: true
       waypoint_pause_duration: 200
 
 velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
-    scale_velocities: False
+    scale_velocities: false
     feedback: "OPEN_LOOP"
     max_velocity: [0.5, 0.0, 2.0]
     min_velocity: [-0.5, 0.0, -2.0]
@@ -310,7 +313,7 @@ collision_monitor:
     state_topic: "collision_monitor_state"
     transform_tolerance: 0.2
     source_timeout: 1.0
-    base_shift_correction: True
+    base_shift_correction: true
     stop_pub_timeout: 2.0
     polygons: ["FootprintApproach"]
     FootprintApproach:
@@ -320,15 +323,15 @@ collision_monitor:
       time_before_collision: 1.2
       simulation_time_step: 0.1
       min_points: 6
-      visualize: False
-      enabled: True
+      visualize: false
+      enabled: true
     observation_sources: ["scan"]
     scan:
       type: "scan"
       topic: "scan"
       min_height: 0.15
       max_height: 2.0
-      enabled: True
+      enabled: true
 
 docking_server:
   ros__parameters:
@@ -366,7 +369,9 @@ docking_server:
 
 lifecycle_manager:
   ros__parameters:
-    node_names: ['controller_server', 'smoother_server', 'planner_server', 'behavior_server', 'bt_navigator', 'waypoint_follower', 'velocity_smoother', 'collision_monitor', 'docking_server']
+    node_names: ['controller_server', 'smoother_server', 'planner_server', 
+                 'behavior_server', 'bt_navigator', 'waypoint_follower', 
+                 'velocity_smoother', 'collision_monitor', 'docking_server']
     autostart: true
     bond_timeout: 10.0
     configure_timeout: 60.0

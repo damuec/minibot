@@ -41,6 +41,7 @@ ament_target_dependencies(velocity_publisher
   rclcpp
   geometry_msgs
 )
+
 # Install C++ executables to libexec directory
 install(TARGETS
   velocity_publisher
@@ -59,7 +60,5 @@ install(
   DIRECTORY config description launch worlds demo_publisher_node maps visual_demos
   DESTINATION share/${PROJECT_NAME}
 )
-
-ament_package()
 
 ament_package()
