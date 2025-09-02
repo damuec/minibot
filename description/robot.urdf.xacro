@@ -1,54 +1,12 @@
-# Create a minimal URDF file
-cat > ~/odin_ws/src/nav2_odin/description/minimal_robot.urdf.xacro << 'EOF'
 <?xml version="1.0"?>
-<robot name="nav2_odin" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+    
+    <xacro:arg name="use_ros2_control"              default="false"/>
+    <xacro:arg name="use_ros2_control_gz_sim"       default="false"/>
 
-  <!-- Base Link -->
-  <link name="base_footprint">
-    <visual>
-      <geometry>
-        <box size="0.3 0.2 0.1"/>
-      </geometry>
-      <material name="blue">
-        <color rgba="0 0 0.8 1"/>
-      </material>
-    </visual>
-  </link>
-
-  <!-- LiDAR Link -->
-  <link name="lidar_frame">
-    <visual>
-      <geometry>
-        <cylinder length="0.05" radius="0.05"/>
-      </geometry>
-      <material name="red">
-        <color rgba="0.8 0 0 1"/>
-      </material>
-    </visual>
-  </link>
-
-  <!-- LiDAR Joint -->
-  <joint name="lidar_joint" type="fixed">
-    <parent link="base_footprint"/>
-    <child link="lidar_frame"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
-  </joint>
-
-  <!-- Base Link to Odom Transform (static) -->
-  <link name="odom"/>
-  <joint name="odom_joint" type="fixed">
-    <parent link="odom"/>
-    <child link="base_footprint"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-
-  <!-- Map to Odom Transform (static) -->
-  <link name="map"/>
-  <joint name="map_joint" type="fixed">
-    <parent link="map"/>
-    <child link="odom"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
+    <!-- Robot_frames -->
+    <xacro:include filename = "robot_main.xacro" />
+    <!-- Sensors -->
+    <xacro:include filename = "lidar.xacro" />
 
 </robot>
-EOF
