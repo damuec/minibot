@@ -190,7 +190,7 @@ def generate_launch_description():
         }.items()
     )
 
-    # Custom lifecycle manager with proper timeouts
+    # Custom lifecycle manager with proper ordering
     lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -200,9 +200,9 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'autostart': True,
             'node_names': [
-                'controller_server',
-                'slam_toolbox',
-                'smoother_server', 
+                'slam_toolbox',       
+                'controller_server',   
+                'smoother_server',
                 'planner_server',
                 'behavior_server',
                 'bt_navigator',
@@ -234,11 +234,11 @@ def generate_launch_description():
     ld.add_action(steering_node)  
     ld.add_action(node_twist_mux)
     ld.add_action(node_twist_stamper)
-    for node_republisher in node_image_republishers:
-        ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)  
     ld.add_action(nav2_launch)  
+    ld.add_action(static_tf)
+
     ld.add_action(lifecycle_manager) 
 
     return ld
