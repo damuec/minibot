@@ -34,23 +34,6 @@
         </visual>
     </link>
 
-    <!-- Transform from base_footprint to base_link -->
-    <joint name="base_footprint_to_base_link" type="fixed">
-        <parent link="base_footprint"/>
-        <child link="base_link"/>
-        <origin xyz="0 0 0.1" rpy="0 0 0"/>
-    </joint>
-
-    <!-- Chasis link -->
-    <link name="chasis">
-        <visual>
-            <geometry>
-                <box size="0.3 0.2 0.1"/>
-            </geometry>
-            <material name="blue"/>
-        </visual>
-    </link>
-
     <!-- Joint to connect base_link to chasis -->
     <joint name="base_link_to_chasis" type="fixed">
         <parent link="base_link"/>
