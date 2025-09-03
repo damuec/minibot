@@ -32,7 +32,7 @@ class SteeringNode(Node):
         # Create subscription to cmd_vel
         self.subscription = self.create_subscription(
             Twist,
-            'cmd_vel',
+            'nav_vel',
             self.cmd_vel_callback,
             10)
         
