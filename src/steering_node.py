@@ -160,8 +160,14 @@ def main(args=None):
     except Exception as e:
         steering_node.get_logger().error(f'Unexpected error: {str(e)}')
     finally:
-        steering_node.destroy_node()
-        rclpy.shutdown()
+        try:
+            steering_node.destroy_node()
+        except:
+            pass
+        try:
+            rclpy.try_shutdown()
+        except:
+            pass
 
 if __name__ == '__main__':
     main()
