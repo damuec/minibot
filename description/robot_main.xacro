@@ -3,6 +3,14 @@
 
     <xacro:include filename="inertial_macros.xacro" />
 
+<xacro:property name="pi" value="3.1415926535897931" />
+
+<joint name="base_footprint_to_base_link" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+</joint>
+
     <material name="blue">
         <color rgba="0 0 1 1"/>
     </material>

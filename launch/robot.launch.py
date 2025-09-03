@@ -96,7 +96,7 @@ def generate_launch_description():
         parameters=[{
             'serial_port': '/dev/esp32',
             'baud_rate': 115200,
-            'timeout': 0.1,
+            'timeout': 0.6,
             'command_timeout': 0.5,
         }]
     )
@@ -150,12 +150,12 @@ def generate_launch_description():
         name='slam_toolbox',
         output='screen',
         parameters=[{
-            'use_sim_time': False,  # Set to false for real robot
+            'use_sim_time': False,  
             'odom_frame': 'odom',
             'map_frame': 'map', 
             'base_frame': 'base_footprint',
             'scan_topic': '/scan',
-            'mode': 'mapping',  # Create new map on startup
+            'mode': 'mapping',  
             'resolution': 0.05,
             'max_laser_range': 10.0,
             'transform_timeout': 0.2,
@@ -166,6 +166,13 @@ def generate_launch_description():
             'loop_search_maximum_distance': 3.0
         }]
     )
+
+    static_tf_node = Node(
+    package='tf2_ros',
+    executable='static_transform_publisher',
+    name='static_odom_tf',
+    arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_footprint']
+)
 
     # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
@@ -194,6 +201,7 @@ def generate_launch_description():
             'autostart': True,
             'node_names': [
                 'controller_server',
+                'slam_toolbox',
                 'smoother_server', 
                 'planner_server',
                 'behavior_server',
@@ -219,7 +227,6 @@ def generate_launch_description():
     )
 
      
-    # Create launch description and add actions
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
@@ -230,8 +237,8 @@ def generate_launch_description():
     for node_republisher in node_image_republishers:
         ld.add_action(node_republisher)
     ld.add_action(node_rplidar_drive)
-    ld.add_action(slam_toolbox)  # Add SLAM toolbox
+    ld.add_action(slam_toolbox)  
     ld.add_action(nav2_launch)  
-    ld.add_action(lifecycle_manager)  # Add the custom lifecycle manager
+    ld.add_action(lifecycle_manager) 
 
     return ld
