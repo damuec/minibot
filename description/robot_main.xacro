@@ -34,12 +34,6 @@
         </visual>
     </link>
 
-    <!-- Joint to connect base_link to chasis -->
-    <joint name="base_link_to_chasis" type="fixed">
-        <parent link="base_link"/>
-        <child link="chasis"/>
-        <origin xyz="0 0 0.1" rpy="0 0 0"/>
-    </joint>
 
     <!-- Front left wheel (steered) -->
     <link name="front_left_wheel">

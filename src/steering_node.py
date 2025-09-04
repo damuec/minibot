@@ -47,7 +47,7 @@ class SteeringNode(Node):
     def connect_serial(self):
         """Connect to ESP32 serial port with retry mechanism"""
         max_retries = 10
-        retry_delay = 1  # second
+        retry_delay = 2 # second
         
         for attempt in range(max_retries):
             try:
@@ -61,9 +61,6 @@ class SteeringNode(Node):
                 
                 # Wait for ESP32 to be ready
                 time.sleep(2)
-                
-                # Clear any existing data in the buffer
-                self.serial_conn.reset_input_buffer()
                 
                 # Read initial message
                 if self.serial_conn.in_waiting > 0:
