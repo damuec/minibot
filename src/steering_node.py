@@ -14,7 +14,7 @@ class SteeringNode(Node):
         self.declare_parameter('serial_port', '/dev/esp32')
         self.declare_parameter('baud_rate', 115200)
         self.declare_parameter('timeout', 0.1)
-        self.declare_parameter('command_timeout', 0.5)
+        self.declare_parameter('command_timeout', 1,0)
         
         # Get parameters
         serial_port = self.get_parameter('serial_port').value
