@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="nav2_odin">
 
-    <xacro:include filename = "lidar.xacro" />
+    <xacro:include filename="lidar.xacro" />
 
-<joint name="base_footprint_to_base_link" type="fixed">
-    <parent link="base_footprint"/>
-    <child link="base_link"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
-</joint>
+    <!-- Define lidar properties here since they're used in this file -->
+    <xacro:property name="lidar_offset_x" value="0.230"/>
+    <xacro:property name="lidar_offset_z" value="0.098"/>
+
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    </joint>
 
     <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -146,12 +150,6 @@
         <child link="rear_right_wheel"/>
         <origin xyz="-0.15 -0.15 0.05" rpy="1.5708 0 0"/> <!-- Replaced pi/2 with 1.5708 -->
         <axis xyz="0 1 0"/>
-    </joint>
-
-    <joint name="lidar_joint" type="fixed">
-    <parent link="chassis"/>
-    <child link="lidar_frame"/>
-    <origin xyz="${lidar_offset_x} 0.0 ${lidar_offset_z}" rpy="0 0 3.14159"/>
     </joint>
 
 </robot>
