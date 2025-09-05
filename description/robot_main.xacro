@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="nav2_odin">
 
-    <joint name="base_footprint_to_base_link" type="fixed">
-        <parent link="base_footprint"/>
-        <child link="base_link"/>
-        <origin xyz="0 0 0.1" rpy="0 0 0"/>
-    </joint>
+<joint name="base_footprint_to_base_link" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+</joint>
 
     <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -21,6 +21,7 @@
 
     <link name="base_footprint"></link>
 
+    <!-- Main robot base -->
     <link name="base_link">
         <visual>
             <geometry>
@@ -35,6 +36,7 @@
         </collision>
     </link>
 
+    <!-- Chassis link -->
     <link name="chassis">
         <visual>
             <geometry>
@@ -118,7 +120,7 @@
     <joint name="rear_left_wheel_joint" type="continuous">
         <parent link="base_link"/>
         <child link="rear_left_wheel"/>
-        <origin xyz="-0.15 0.15 0.05" rpy="pi/2 0 0"/> <!-- Replaced pi/2 with 1.5708 -->
+        <origin xyz="-0.15 0.15 0.05" rpy="1.5708 0 0"/> <!-- Replaced pi/2 with 1.5708 -->
         <axis xyz="0 1 0"/>
     </joint>
 
@@ -140,7 +142,7 @@
     <joint name="rear_right_wheel_joint" type="continuous">
         <parent link="base_link"/>
         <child link="rear_right_wheel"/>
-        <origin xyz="-0.15 -0.15 0.05" rpy="pi/2 0 0"/> 
+        <origin xyz="-0.15 -0.15 0.05" rpy="1.5708 0 0"/> <!-- Replaced pi/2 with 1.5708 -->
         <axis xyz="0 1 0"/>
     </joint>
 
