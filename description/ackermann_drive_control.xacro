@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Minimal Ackermann drive control for real hardware without ROS2 Control -->
+  <xacro:macro name="ackermann_drive_control" params="prefix *joints">
+    <!-- Basic Ackermann geometry parameters -->
+    <xacro:property name="wheel_separation" value="0.3" />
+    <xacro:property name="wheel_base" value="0.3" />
+    
+    <!-- Empty macro for compatibility - no transmissions needed -->
+  </xacro:macro>
+</robot>

@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="nav2_odin">
 
-    <xacro:include filename="inertial_macros.xacro" />
-
-
-<joint name="base_footprint_to_base_link" type="fixed">
-    <parent link="base_footprint"/>
-    <child link="base_link"/>
-    <origin xyz="0 0 0.1" rpy="0 0 0"/>
-</joint>
+    <joint name="base_footprint_to_base_link" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    </joint>
 
     <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -24,7 +21,6 @@
 
     <link name="base_footprint"></link>
 
-    <!-- Main robot base -->
     <link name="base_link">
         <visual>
             <geometry>
@@ -32,8 +28,33 @@
             </geometry>
             <material name="blue"/>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.4 0.3 0.2"/>
+            </geometry>
+        </collision>
     </link>
 
+    <link name="chassis">
+        <visual>
+            <geometry>
+                <box size="0.35 0.25 0.05"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.35 0.25 0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Joint to connect base_link to chassis -->
+    <joint name="base_link_to_chassis" type="fixed">
+        <parent link="base_link"/>
+        <child link="chassis"/>
+        <origin xyz="0 0 0.125" rpy="0 0 0"/>
+    </joint>
 
     <!-- Front left wheel (steered) -->
     <link name="front_left_wheel">
@@ -43,6 +64,11 @@
             </geometry>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="front_left_steering_joint" type="continuous">
@@ -60,6 +86,11 @@
             </geometry>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="front_right_steering_joint" type="continuous">
@@ -77,12 +108,17 @@
             </geometry>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="rear_left_wheel_joint" type="continuous">
         <parent link="base_link"/>
         <child link="rear_left_wheel"/>
-        <origin xyz="-0.15 0.15 0.05" rpy="${pi/2} 0 0"/>
+        <origin xyz="-0.15 0.15 0.05" rpy="pi/2 0 0"/> <!-- Replaced pi/2 with 1.5708 -->
         <axis xyz="0 1 0"/>
     </joint>
 
@@ -94,12 +130,17 @@
             </geometry>
             <material name="black"/>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.03"/>
+            </geometry>
+        </collision>
     </link>
 
     <joint name="rear_right_wheel_joint" type="continuous">
         <parent link="base_link"/>
         <child link="rear_right_wheel"/>
-        <origin xyz="-0.15 -0.15 0.05" rpy="${pi/2} 0 0"/>
+        <origin xyz="-0.15 -0.15 0.05" rpy="pi/2 0 0"/> 
         <axis xyz="0 1 0"/>
     </joint>
 
