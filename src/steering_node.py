@@ -14,13 +14,15 @@ class SteeringNode(Node):
         self.declare_parameter('serial_port', '/dev/esp32')
         self.declare_parameter('baud_rate', 115200)
         self.declare_parameter('timeout', 0.1)
-        self.declare_parameter('command_timeout', 1,0)
+        self.declare_parameter('command_timeout', 0.5)
+        self.declare_parameter('cmd_vel_topic', 'cmd_vel')  # New parameter for topic name
         
         # Get parameters
         serial_port = self.get_parameter('serial_port').value
         baud_rate = self.get_parameter('baud_rate').value
         timeout = self.get_parameter('timeout').value
         self.command_timeout = self.get_parameter('command_timeout').value
+        cmd_vel_topic = self.get_parameter('cmd_vel_topic').value  # Get topic name
         
         # Initialize serial connection
         self.serial_conn = None
@@ -29,12 +31,14 @@ class SteeringNode(Node):
         self.timeout = timeout
         self.connect_serial()
         
-        # Create subscription to cmd_vel
+        # Create subscription to cmd_vel (using parameter)
         self.subscription = self.create_subscription(
             Twist,
-            'nav_vel',
+            cmd_vel_topic,
             self.cmd_vel_callback,
             10)
+        
+        self.get_logger().info(f'Subscribed to {cmd_vel_topic} topic')
         
         # Initialize last command time
         self.last_command_time = self.get_clock().now().nanoseconds / 1e9
@@ -81,6 +85,9 @@ class SteeringNode(Node):
 
     def cmd_vel_callback(self, msg):
         """Process incoming Twist messages"""
+        # Log received message for debugging
+        self.get_logger().info(f'Received command: linear.x={msg.linear.x}, angular.z={msg.angular.z}')
+        
         # Convert linear and angular velocity to throttle and steering
         throttle = int(msg.linear.x * 255)  # Scale to -255 to 255
         steering = float(msg.angular.z)     # Radians
@@ -96,15 +103,8 @@ class SteeringNode(Node):
             if self.serial_conn and self.serial_conn.is_open:
                 self.serial_conn.write(command.encode())
                 self.last_command_time = self.get_clock().now().nanoseconds / 1e9
+                self.get_logger().info(f'Sent command: {command.strip()}')
                 
-                # Read response (non-blocking)
-                if self.serial_conn.in_waiting > 0:
-                    response = self.serial_conn.readline().decode().strip()
-                    if response.startswith('OK:'):
-                        self.get_logger().debug(f'ESP32 response: {response}')
-                    elif response.startswith('ODOM:'):
-                        # Process odometry data if needed
-                        pass
         except (serial.SerialException, OSError) as e:
             self.get_logger().error(f'Serial communication error: {str(e)}')
             self.reconnect_serial()
