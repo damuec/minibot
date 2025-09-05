@@ -146,4 +146,10 @@
         <axis xyz="0 1 0"/>
     </joint>
 
+    <joint name="lidar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="lidar_frame"/>
+    <origin xyz="${lidar_offset_x} 0.0 ${lidar_offset_z}" rpy="0 0 3.14159"/>
+    </joint>
+
 </robot>

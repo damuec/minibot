@@ -96,7 +96,7 @@ def generate_launch_description():
         parameters=[{
             'serial_port': '/dev/esp32',
             'baud_rate': 115200,
-            'timeout': 0.6,
+            'timeout': 0.5,
             'command_timeout': 0.5,
         }]
     )
