@@ -167,20 +167,6 @@ def generate_launch_description():
         }]
     )
 
-    static_tf_node = Node(
-    package='tf2_ros',
-    executable='static_transform_publisher',
-    name='static_odom_tf',
-    arguments=['0', '0', '0', '0', '0', '0', 'odom', 'base_footprint']
-    )
-
-
-    static_tf_chassis = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        arguments=['0', '0', '0.125', '0', '0', '0', 'base_footprint', 'chassis']
-    )
-
     # Nav2 launch with autostart disabled
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -218,22 +204,15 @@ def generate_launch_description():
                 'collision_monitor',
                 'docking_server'
             ],
-            'bond_timeout': 10.0,
-            'configure_timeout': 60.0,
-            'activate_timeout': 60.0,
+            'bond_timeout': 20.0,
+            'configure_timeout': 120.0,
+            'activate_timeout': 120.0,
             'cleanup_timeout': 5.0,
             'deactivate_timeout': 5.0,
             'shutdown_timeout': 5.0
         }]
     )
 
-    static_tf = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        arguments=['0', '0', '0', '0', '0', '0', 'map', 'odom']
-    )
-
-     
     ld = LaunchDescription()
     ld.add_action(declare_use_sim_time)
     ld.add_action(declare_lidar_serial_port)
@@ -244,8 +223,6 @@ def generate_launch_description():
     ld.add_action(node_rplidar_drive)
     ld.add_action(slam_toolbox)  
     ld.add_action(nav2_launch)  
-    ld.add_action(static_tf)
-    ld.add_action(static_tf_chassis)
 
 
     ld.add_action(lifecycle_manager) 
