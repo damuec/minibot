@@ -5,7 +5,7 @@
     <xacro:property name="lidar_offset_z" value="0.098"/>
 
     <xacro:include filename="lidar.xacro" />
-
+    
     <joint name="base_footprint_to_base_link" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>

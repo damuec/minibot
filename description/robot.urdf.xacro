@@ -6,7 +6,5 @@
 
     <!-- Robot_frames -->
     <xacro:include filename = "robot_main.xacro" />
-    <!-- Sensors -->
-    <xacro:include filename = "lidar.xacro" />
 
 </robot>
